@@ -1163,127 +1163,130 @@ function buildDurationTable(){
 
 function updateDOM(){
   var s=state;
-  var gp=r1(s.tGC/Math.max(s.tGC+s.tES,1)*100);
+  // Safe accessors — never crash on undefined
+  function n(v){ return (v==null||isNaN(v))?0:v; }
+  function ns(v){ return n(v).toLocaleString(); }
+  function pct(v){ return n(v)+'%'; }
+  function el(id,val){ var e=document.getElementById(id); if(e) e.textContent=val; }
+
+  var gp=r1(n(s.tGC)/Math.max(n(s.tGC)+n(s.tES),1)*100);
+  var ep=r1(100-gp);
+  var latestSh=n((s.sh||[])[( s.sh||[]).length-1]);
+  var l0=(s.lbs||[])[0]||'';
+  var lL=(s.lbs||[])[(s.lbs||[]).length-1]||'';
+
+  // Business impact ribbon
+  var ribbonDiff=n(s.esDAll)-n(s.gcDAll);
+  var ribbonHrs=Math.round(n(s.tGC)*ribbonDiff/60);
+  el('r-hrs-saved', ribbonHrs>0?ribbonHrs.toLocaleString()+'h':'–');
+  el('r-min-saved', ribbonDiff>0?ribbonDiff+' min / booking':'–');
+  el('r-direct-count', ns(s.gcDirAll||s.gcDiAll));
+  el('r-direct-rate', pct(s.gcDPAll));
+  el('r-gc-prem', pct(s.gcPremP));
+  el('r-es-prem', pct(s.esPremP));
+  var premDelta=r1(n(s.gcPremP)-n(s.esPremP));
+  el('r-prem-delta', (premDelta>0?'+':'')+premDelta+'pp vs ES');
+  el('r-gc-agents', ns(s.gcAg));
+  el('r-es-agents', ns(s.esAg));
+  var agentDelta=n(s.gcAg)-n(s.esAg);
+  el('r-agent-delta', (agentDelta>0?'+':'')+agentDelta+' more on GC');
+  el('r-gc-total', ns(s.tGC));
+  var latestShare=n((s.sh||[])[(s.sh||[]).length-1]);
+  el('r-gc-share', latestShare+'%');
+  var progBar=document.getElementById('r-prog-bar'); if(progBar) progBar.style.width=Math.min(latestShare,100)+'%';
+  if(l0&&lL){var pr=document.getElementById('r-prog-range'); if(pr) pr.textContent=l0+' – '+lL;}
+
+  // Overview share bar
+  el('ov-gcpct', gp+'%'); el('ov-gclbl','GC '+gp+'%'); el('ov-eslbl','ES '+ep+'%');
+  var gcB=document.getElementById('gcBar'); if(gcB){gcB.style.width=gp+'%';gcB.textContent=gp+'%';}
+  var esB=document.getElementById('esBar'); if(esB){esB.style.width=ep+'%';esB.textContent=ep+'%';}
+  var ss=document.getElementById('shareSubtitle'); if(ss) ss.textContent=l0&&lL?l0+' – '+lL:'Selected period';
+
+  // Stat strip
+  el('s-gcshare', latestShare+'%');
+  el('s-gcvol', ns(s.tGC));
+  var svs=document.getElementById('s-gcvol-sub'); if(svs) svs.textContent=l0&&lL?l0+' – '+lL:'–';
+  el('s-dur', n(s.gcDAll)+' min');
+  var sds=document.getElementById('s-dur-sub'); if(sds) sds.textContent='vs ES '+n(s.esDAll)+' min';
+  el('s-block', ns(n(s.tHard)+n(s.tSoft)));
+
+  // KPI row
+  el('k-gc', ns(s.tGC)); el('k-es', ns(s.tES));
+  var kgs=document.getElementById('k-gc-sub'); if(kgs) kgs.textContent=l0&&lL?l0+' – '+lL:'–';
+  var kes=document.getElementById('k-es-sub'); if(kes) kes.textContent=l0&&lL?l0+' – '+lL:'–';
+  el('k-gcacc', pct(s.gcAcAll)); el('k-esacc', pct(s.esAcAll));
+
+  // GC growth
+  el('gg-vol', ns((s.gcV||[])[(s.gcV||[]).length-1]));
+  el('gg-insight', l0&&lL?'↑ '+l0+': '+ns((s.gcV||[])[0])+' → '+lL+': '+ns((s.gcV||[])[(s.gcV||[]).length-1])+' · Share: '+n((s.sh||[])[0])+'% → '+n((s.sh||[])[(s.sh||[]).length-1])+'%':'–');
+
+  // Direct flights
+  var dfD=r1(n(s.gcDPAll)-n(s.esDPAll));
+  el('df-rate', pct(s.gcDPAll)); el('df-gc-pct', pct(s.gcDPAll)); el('df-es-pct', pct(s.esDPAll));
+  var ddEl=document.getElementById('directDelta'); if(ddEl) ddEl.textContent='GC '+(dfD>0?'+':'')+dfD+'pp';
+  el('df-insight','↑ Direct bookings: '+ns((s.gcDC||[])[0])+' in '+l0+' → '+ns((s.gcDC||[])[(s.gcDC||[]).length-1])+' in '+lL+' · GC rate '+(dfD>0?'+':'')+dfD+'pp vs ES');
+  el('k-gclegs', n(s.gcLgAll)); el('k-eslegs', n(s.esLgAll));
+
+  // Route duration
+  var diffMin=n(s.esDAll)-n(s.gcDAll);
+  var hrsSaved=Math.round(n(s.tGC)*diffMin/60);
+  var hrsPotential=Math.round((n(s.tGC)+n(s.tES))*diffMin/60);
+  el('rd-dur', n(s.gcDAll)+' min'); el('rd-gc-avg', n(s.gcDAll)+' min'); el('rd-es-avg', n(s.esDAll)+' min');
+  el('rd-hrs-saved', hrsSaved>0?hrsSaved.toLocaleString()+'h':'–');
+  el('rd-hrs-potential', hrsPotential>0?hrsPotential.toLocaleString()+'h':'–');
+  var durDeltaEl=document.getElementById('durDelta'); if(durDeltaEl) durDeltaEl.textContent='GC '+r0(n(s.esDAll)-n(s.gcDAll))+' min shorter';
+  el('rd-insight','↓ GC avg duration: '+n((s.gcDA||[])[0])+' min in '+l0+' → '+n((s.gcDA||[])[(s.gcDA||[]).length-1])+' min in '+lL+' · '+diffMin+' min shorter than ES · '+hrsSaved.toLocaleString()+' flying hours saved');
+  var wellHrsEl=document.getElementById('rd-well-hrs');
+  if(wellHrsEl) wellHrsEl.textContent=diffMin+' min saved per booking × GC volume = '+hrsSaved.toLocaleString()+' flying hours saved for Teleport\'s network';
+
+  // Block
+  el('bl-total', ns(n(s.tHard)+n(s.tSoft)));
+  el('bl-hard', ns(s.tHard)); el('bl-soft', ns(s.tSoft));
+  el('bl-insight','↑ Block bookings: '+ns((s.hBa||[])[0]+((s.sBa||[])[0]||0))+' in '+l0+' → '+ns(((s.hBa||[])[(s.hBa||[]).length-1]||0)+((s.sBa||[])[(s.sBa||[]).length-1]||0))+' in '+lL+' · Hard: '+ns(s.tHard)+' | Soft: '+ns(s.tSoft));
+
+  // Booking health
+  el('bh-acc', pct(s.gcAcAll)); el('bh-gc-acc', pct(s.gcAcAll)); el('bh-es-acc', pct(s.esAcAll));
+  el('bh-acc-gap', (r1(n(s.gcAcAll)-n(s.esAcAll))>0?'+':'')+r1(n(s.gcAcAll)-n(s.esAcAll))+'pp');
+  el('bh-gc-wl', pct(s.gcWlAll)); el('bh-es-wl', pct(s.esWlAll));
+  el('bh-wl-gap', (r1(n(s.gcWlAll)-n(s.esWlAll))>0?'+':'')+r1(n(s.gcWlAll)-n(s.esWlAll))+'pp');
+  el('bh-gc-legs', n(s.gcLgAll)); el('bh-es-legs', n(s.esLgAll));
+  el('bh-legs-gap', (r1(n(s.gcLgAll)-n(s.esLgAll))>0?'+':'')+r1(n(s.gcLgAll)-n(s.esLgAll)));
+  el('k-gcwait', pct(s.gcWlAll)); el('k-eswait', pct(s.esWlAll));
+
+  // Product type table
+  el('pt-gcprem', pct(s.gcPremP));
+  var ptRows=[['pt-tg','TG Contract'],['pt-tpg','Teleport Guaranteed'],['pt-ltf','LTF/ FLOWERS'],['pt-ec','Teleport eCommerce'],['pt-bu','Basic Uplift'],['pt-fl','FLEXI'],['pt-nd','Next Day'],['pt-gn','GENERAL']];
+  ptRows.forEach(function(row){
+    var id=row[0],key=row[1];
+    var gc=n((s.gcPr||{})[key]),es=n((s.esPr||{})[key]);
+    var gcPct=r1(gc/Math.max(n(s.tGC),1)*100);
+    var esPct=r1(es/Math.max(n(s.tES),1)*100);
+    el(id+'-gc', gc.toLocaleString()); el(id+'-gcpct', gcPct+'%');
+    el(id+'-es', es.toLocaleString()); el(id+'-espct', esPct+'%');
+  });
+
+  // Agent base
+  el('ab-gc', ns(s.gcAg)); el('ab-gc-agents', ns(s.gcAg)); el('ab-es-agents', ns(s.esAg));
+  el('ab-gc-vol', ns(s.tGC)); el('ab-es-vol', ns(s.tES));
+  el('ab-gc-bpa', r0(n(s.tGC)/Math.max(n(s.gcAg),1)));
+  el('ab-es-bpa', r0(n(s.tES)/Math.max(n(s.esAg),1)));
+  el('ab-gc-dir', pct(s.gcDPAll)); el('ab-es-dir', pct(s.esDPAll));
+  el('k-gcdirect', ns(s.gcDirAll||s.gcDiAll)); el('k-gctransit', ns(s.gcTrAll));
+
+  // Meta
+  el('meta-total', ns(n(s.tGC)+n(s.tES)));
+  if(l0&&lL){var mr=document.getElementById('meta-range'); if(mr) mr.textContent=l0+' – '+lL; var sbm=document.getElementById('sb-meta'); if(sbm) sbm.textContent=l0+' – '+lL;}
+
+  buildPeriodRow('shareRow',s.lbs||[],s.gcV||[],s.esV||[]);
+  buildPeriodRow('gcShareMonthRow',s.lbs||[],s.gcV||[],s.esV||[]);
+  buildDurationTable();
+}
   var ep=r1(100-gp);
   var latestSh=s.sh[s.sh.length-1]||0;
   var l0=s.lbs[0]||'',lL=s.lbs[s.lbs.length-1]||'';
 
   // Business impact ribbon
   var ribbonDiff=s.esDAll-s.gcDAll;
-  var ribbonHrs=Math.round(s.tGC*ribbonDiff/60);
-  document.getElementById('r-hrs-saved').textContent=ribbonHrs>0?ribbonHrs.toLocaleString()+'h':'–';
-  document.getElementById('r-min-saved').textContent=ribbonDiff>0?ribbonDiff+' min / booking':'–';
-  document.getElementById('r-direct-count').textContent=s.gcDirAll.toLocaleString();
-  document.getElementById('r-direct-rate').textContent=s.gcDPAll+'%';
-  document.getElementById('r-gc-prem').textContent=s.gcPremP+'%';
-  document.getElementById('r-es-prem').textContent=s.esPremP+'%';
-  var premDelta=r1(s.gcPremP-s.esPremP);
-  document.getElementById('r-prem-delta').textContent=(premDelta>0?'+':'')+premDelta+'pp vs ES';
-  document.getElementById('r-gc-agents').textContent=s.gcAg.toLocaleString();
-  document.getElementById('r-es-agents').textContent=s.esAg.toLocaleString();
-  var agentDelta=s.gcAg-s.esAg;
-  document.getElementById('r-agent-delta').textContent=(agentDelta>0?'+':'')+agentDelta+' more on GC';
-  document.getElementById('r-gc-total').textContent=s.tGC.toLocaleString();
-  var latestShare=s.sh[s.sh.length-1]||0;
-  document.getElementById('r-gc-share').textContent=latestShare+'%';
-  document.getElementById('r-prog-bar').style.width=Math.min(latestShare,100)+'%';
-  if(l0&&lL) document.getElementById('r-prog-range').textContent=l0+' – '+lL;
-  // Meta
-  document.getElementById('ov-gcpct').textContent=gp+'%';
-  document.getElementById('ov-gclbl').textContent='GC '+gp+'%';
-  document.getElementById('ov-eslbl').textContent='ES '+ep+'%';
-  document.getElementById('gcBar').style.width=gp+'%';document.getElementById('gcBar').textContent=gp+'%';
-  document.getElementById('esBar').style.width=ep+'%';document.getElementById('esBar').textContent=ep+'%';
-
-  // Growth
-  document.getElementById('gg-vol').textContent=kf(s.gcV[s.gcV.length-1]||0);
-  document.getElementById('gg-insight').textContent=l0&&lL?'↑ '+l0+': '+(s.gcV[0]||0).toLocaleString()+' → '+lL+': '+(s.gcV[s.gcV.length-1]||0).toLocaleString()+' · Share: '+(s.sh[0]||0)+'% → '+(s.sh[s.sh.length-1]||0)+'%':'–';
-
-  // Direct
-  document.getElementById('df-rate').textContent=s.gcDPAll+'%';
-  document.getElementById('df-gc-pct').textContent=s.gcDPAll+'%';
-  document.getElementById('df-es-pct').textContent=s.esDPAll+'%';
-  var dfD=r1(s.gcDPAll-s.esDPAll);
-  document.getElementById('df-insight').textContent='↑ Direct bookings: '+(s.gcDC[0]||0).toLocaleString()+' in '+l0+' → '+(s.gcDC[s.gcDC.length-1]||0).toLocaleString()+' in '+lL+' · GC rate '+(dfD>0?'+':'')+dfD+'pp vs ES';
-
-  // Route duration
-  document.getElementById('rd-dur').textContent=s.gcDAll+' min';
-  document.getElementById('rd-gc-avg').textContent=s.gcDAll+' min';
-  document.getElementById('rd-es-avg').textContent=s.esDAll+' min';
-  var diffMin=s.esDAll-s.gcDAll;
-  var hrsSaved=Math.round(s.tGC*diffMin/60);
-  var hrsPotential=Math.round((s.tGC+s.tES)*diffMin/60);
-  document.getElementById('rd-hrs-saved').textContent=hrsSaved>0?hrsSaved.toLocaleString()+'h':'–';
-  document.getElementById('rd-hrs-potential').textContent=hrsPotential>0?hrsPotential.toLocaleString()+'h':'–';
-  document.getElementById('rd-insight').textContent='↓ GC avg duration: '+(s.gcDA[0]||0)+' min in '+l0+' → '+(s.gcDA[s.gcDA.length-1]||0)+' min in '+lL+' · '+(s.esDAll-s.gcDAll)+' min shorter than ES · '+hrsSaved.toLocaleString()+' flying hours saved';
-  var wellHrsEl=document.getElementById('rd-well-hrs');
-  if(wellHrsEl) wellHrsEl.textContent=diffMin+' min saved per booking × GC volume = '+hrsSaved.toLocaleString()+' flying hours saved for Teleport\'s network';
-
-  // Block
-  document.getElementById('bl-total').textContent=(s.tHard+s.tSoft).toLocaleString();
-  document.getElementById('bl-hard').textContent=s.tHard.toLocaleString();
-  document.getElementById('bl-soft').textContent=s.tSoft.toLocaleString();
-  document.getElementById('bl-insight').textContent='↑ Block bookings: '+(s.hBa[0]||0+s.sBa[0]||0)+' in '+l0+' → '+((s.hBa[s.hBa.length-1]||0)+(s.sBa[s.sBa.length-1]||0))+' in '+lL+' · Hard: '+s.tHard.toLocaleString()+' | Soft: '+s.tSoft.toLocaleString();
-
-  // Booking health
-  document.getElementById('bh-acc').textContent=s.gcAcAll+'%';
-  document.getElementById('bh-gc-acc').textContent=s.gcAcAll+'%';
-  document.getElementById('bh-es-acc').textContent=s.esAcAll+'%';
-  document.getElementById('bh-acc-gap').textContent=(r1(s.gcAcAll-s.esAcAll)>0?'+':'')+r1(s.gcAcAll-s.esAcAll)+'pp';
-  document.getElementById('bh-gc-wl').textContent=s.gcWlAll+'%';
-  document.getElementById('bh-es-wl').textContent=s.esWlAll+'%';
-  document.getElementById('bh-wl-gap').textContent=(r1(s.gcWlAll-s.esWlAll)>0?'+':'')+r1(s.gcWlAll-s.esWlAll)+'pp';
-  document.getElementById('bh-gc-legs').textContent=s.gcLgAll;
-  document.getElementById('bh-es-legs').textContent=s.esLgAll;
-  document.getElementById('bh-legs-gap').textContent=(r1(s.gcLgAll-s.esLgAll)>0?'+':'')+r1(s.gcLgAll-s.esLgAll);
-
-  // Product type table
-  document.getElementById('pt-gcprem').textContent=s.gcPremP+'%';
-  var ptRows=[
-    ['pt-tg',  'TG Contract'],
-    ['pt-tpg', 'Teleport Guaranteed'],
-    ['pt-ltf', 'LTF/ FLOWERS'],
-    ['pt-ec',  'Teleport eCommerce'],
-    ['pt-bu',  'Basic Uplift'],
-    ['pt-fl',  'FLEXI'],
-    ['pt-nd',  'Next Day'],
-    ['pt-gn',  'GENERAL']
-  ];
-  ptRows.forEach(function(row){
-    var id=row[0], key=row[1];
-    var gc=s.gcPr[key]||0, es=s.esPr[key]||0;
-    var gcPct=r1(gc/Math.max(s.tGC,1)*100);
-    var esPct=r1(es/Math.max(s.tES,1)*100);
-    var gcEl=document.getElementById(id+'-gc');
-    var gcPctEl=document.getElementById(id+'-gcpct');
-    var esEl=document.getElementById(id+'-es');
-    var esPctEl=document.getElementById(id+'-espct');
-    if(gcEl) gcEl.textContent=gc.toLocaleString();
-    if(gcPctEl) gcPctEl.textContent=gcPct+'%';
-    if(esEl) esEl.textContent=es.toLocaleString();
-    if(esPctEl) esPctEl.textContent=esPct+'%';
-  });
-
-  // Agent base
-  document.getElementById('ab-gc').textContent=s.gcAg.toLocaleString();
-  document.getElementById('ab-gc-agents').textContent=s.gcAg.toLocaleString();
-  document.getElementById('ab-es-agents').textContent=s.esAg.toLocaleString();
-  document.getElementById('ab-gc-vol').textContent=s.tGC.toLocaleString();
-  document.getElementById('ab-es-vol').textContent=s.tES.toLocaleString();
-  document.getElementById('ab-gc-bpa').textContent=r0(s.tGC/Math.max(s.gcAg,1));
-  document.getElementById('ab-es-bpa').textContent=r0(s.tES/Math.max(s.esAg,1));
-  document.getElementById('ab-gc-dir').textContent=s.gcDPAll+'%';
-  document.getElementById('ab-es-dir').textContent=s.esDPAll+'%';
-
-  // Meta
-  document.getElementById('meta-total').textContent=(s.tGC+s.tES).toLocaleString();
-  if(l0&&lL){document.getElementById('meta-range').textContent=l0+' – '+lL;document.getElementById('sb-meta').textContent=l0+' – '+lL;}
-
-  buildPeriodRow('shareRow',s.lbs,s.gcV,s.esV);
-  buildPeriodRow('gcShareMonthRow',s.lbs,s.gcV,s.esV);
-  buildDurationTable();
-}
-
 function populateDropdowns(rows){
   var prods=new Set(),stats=new Set();
   rows.forEach(function(r){
