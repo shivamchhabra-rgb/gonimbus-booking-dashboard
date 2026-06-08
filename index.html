@@ -598,23 +598,47 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
 
   <!-- ─── 5. BLOCK UTILISATION ─── -->
   <div class="section" id="block-util">
-    <div class="section-label">5 · Block utilisation — Margin recovery</div>
+    <div class="section-label">5 · Block utilisation — Guaranteed revenue &amp; load planning</div>
     <div class="metric-card">
       <div class="metric-card-header">
         <div>
-          <div class="metric-tag tag-green">Margin recovery</div>
-          <div class="metric-name">GC block bookings — monthly growth</div>
-          <div class="metric-stream">Block space is pre-committed cost. Unfilled block = margin leakage. ES has zero block visibility — every GC block booking is revenue that was invisible on ES.</div>
+          <div class="metric-tag tag-green">Guaranteed revenue</div>
+          <div class="metric-name">Hard block &amp; soft block bookings — monthly growth</div>
+          <div class="metric-stream">Teleport's sales team sells blocked capacity to agents for a fixed period on a given O&amp;D. Whether the agent utilises the space or not, this is committed revenue for Teleport — making block sales one of the highest-quality revenue streams in the business.</div>
         </div>
         <div class="metric-current">
           <div class="metric-current-val green" id="bl-total">–</div>
           <div class="metric-current-lbl">Total block bookings</div>
         </div>
       </div>
+
       <div class="outcome-row">
         <div class="outcome-label">Outcome</div>
-        <div class="outcome-text">GC consistently fills block space — growing 8.8× from Dec 2025 to May 2026. Making block inventory visible to agents at booking time directly drives utilisation. ES block bookings: 0.</div>
+        <div class="outcome-text">More block bookings through GC means more guaranteed, predictable revenue for Teleport — independent of actual cargo loaded. Beyond revenue, a higher concentration of block bookings gives the operations and load planning teams advance visibility of committed capacity, enabling better flight planning, ULD allocation, and ground handling coordination.</div>
       </div>
+
+      <!-- Block type context strip -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-bottom:1px solid var(--border)">
+        <div style="background:var(--white);padding:14px 18px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#0C447C"></span>
+            <span style="font-size:11px;font-weight:600;color:#0C447C;letter-spacing:.06em;text-transform:uppercase">Hard block</span>
+          </div>
+          <div style="font-size:12px;color:var(--ink-2);line-height:1.7">Agent purchases a fixed allocation of capacity on a specific flight and O&amp;D for a defined period. Teleport earns the revenue regardless of whether the agent loads cargo — zero revenue risk for Teleport.</div>
+          <div style="margin-top:8px;font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:#0C447C" id="bl-hard">–</div>
+          <div style="font-size:10px;color:var(--ink-4);margin-top:2px">hard block bookings to date</div>
+        </div>
+        <div style="background:var(--white);padding:14px 18px;border-left:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#85B7EB"></span>
+            <span style="font-size:11px;font-weight:600;color:#378ADD;letter-spacing:.06em;text-transform:uppercase">Soft block</span>
+          </div>
+          <div style="font-size:12px;color:var(--ink-2);line-height:1.7">Agent reserves capacity with a confirmed booking right, subject to availability confirmation. Provides Teleport with strong demand signals for planning while giving agents flexibility — a commercial bridge to hard block commitment.</div>
+          <div style="margin-top:8px;font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:#378ADD" id="bl-soft">–</div>
+          <div style="font-size:10px;color:var(--ink-4);margin-top:2px">soft block bookings to date</div>
+        </div>
+      </div>
+
       <div class="chart-area">
         <div class="chart-legend">
           <span class="cleg"><span class="cleg-dot" style="background:#0c447c"></span>Hard block</span>
@@ -623,36 +647,45 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
         <div class="cw" style="height:200px"><canvas id="blockChart"></canvas></div>
         <div class="chart-insight" id="bl-insight">–</div>
       </div>
+
       <div class="levers-section">
         <div class="levers-title">Levers driving the metric</div>
         <div class="lever">
-          <div class="lever-header"><span class="lever-id">L-01</span><span class="lever-title">Block visibility at top of route list</span></div>
-          <div class="lever-body">GC shows Hard Block and Soft Block first. Agents default to the first good option — making block the default choice drives utilisation without mandating it.</div>
-          <span class="lever-impact impact-green">↑ Utilisation</span>
+          <div class="lever-header"><span class="lever-id">L-01</span><span class="lever-title">Block surfaced first in route generation</span></div>
+          <div class="lever-body">GC's route ordering puts Hard Block and Soft Block at the top of every agent's route list. Agents naturally pick the first viable option — making block the path of least resistance and driving adoption without mandating it.</div>
+          <span class="lever-impact impact-green">↑ Block revenue</span>
         </div>
         <div class="lever">
-          <div class="lever-header"><span class="lever-id">L-02</span><span class="lever-title">Block profile management</span></div>
-          <div class="lever-body">Commercial teams set overbooking thresholds, auto-confirmation %, and ULD configs per route. Tighter configuration converts more bookings to block automatically.</div>
-          <span class="lever-impact impact-green">↑ Revenue</span>
+          <div class="lever-header"><span class="lever-id">L-02</span><span class="lever-title">Sales team block configuration</span></div>
+          <div class="lever-body">Teleport's sales team can configure block profiles per route — defining capacity allocation, overbooking thresholds, and auto-confirmation percentages directly in GC. Accurate configuration converts agent demand into confirmed block sales efficiently.</div>
+          <span class="lever-impact impact-green">↑ Guaranteed revenue</span>
         </div>
         <div class="lever">
-          <div class="lever-header"><span class="lever-id">L-03</span><span class="lever-title">Real-time capacity console</span></div>
-          <div class="lever-body">Load planners see block status live and can open/close block dynamically — preventing waste from blocks closed too early or kept open beyond demand.</div>
-          <span class="lever-impact impact-blue">↑ Precision</span>
+          <div class="lever-header"><span class="lever-id">L-03</span><span class="lever-title">Real-time capacity console for load planners</span></div>
+          <div class="lever-body">Load planners see block inventory status live and can open or close block space dynamically. This prevents premature closure (which leaves revenue on the table) and overcommitment (which creates operational risk).</div>
+          <span class="lever-impact impact-blue">↑ Load planning accuracy</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-04</span><span class="lever-title">Automated FBL/CBA airline messaging</span></div>
+          <div class="lever-body">GC automatically triggers flight booking list (FBL) and capacity booking acknowledgement (CBA) messages to airline partners when block space is booked or modified — keeping capacity commitments in sync without manual intervention.</div>
+          <span class="lever-impact impact-blue">↑ Operational precision</span>
         </div>
       </div>
+
       <div class="wi-row">
         <div class="wi-cell">
           <div class="wi-title green">✓ &nbsp;What went well</div>
-          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>8.8× growth (243 → 2,144) with no specific block campaign — organic, driven by visibility alone</span></div>
-          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Hard and soft block growing at equal rates — agents committing to hard block, not just soft</span></div>
-          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Acceleration in Apr–May 2026 as GC agent base crossed 50% share</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>8.8× growth in block bookings (243 → 2,144) — entirely organic, driven by GC surfacing block inventory that was previously invisible to agents</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Hard block and soft block growing at equal rates — agents are committing to hard block with confidence, not defaulting to the softer option</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Acceleration in Apr–May 2026 aligned with GC crossing 50% agent share — more agents on GC = more block exposure = more guaranteed revenue</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Block bookings provide load planning teams with committed forward capacity — reducing last-minute flight plan changes and improving ULD utilisation</span></div>
         </div>
         <div class="wi-cell">
           <div class="wi-title amber">→ &nbsp;How to improve</div>
-          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Block utilisation rate is unknown — add total block capacity data to measure booked ÷ available</span></div>
-          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Track soft block → confirmed conversion rate — high drop rates indicate placeholder behaviour</span></div>
-          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Identify routes with lowest block fill rates — pricing or availability adjustments needed</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Block coverage by O&amp;D is unknown — identify which high-volume routes have no block product sold, and prioritise the sales team to close those gaps</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Soft block → hard block conversion rate should be tracked — agents on soft block are warm leads for the sales team to upgrade to committed hard block revenue</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Agent training on block commitment — agents who understand hard block's commercial model (pay whether you load or not) make faster, more confident purchasing decisions</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>As migration completes, the full ES agent base will have block visibility for the first time — the sales team should have a proactive outreach plan ready for this cohort</span></div>
         </div>
       </div>
     </div>
@@ -1055,6 +1088,8 @@ function updateDOM(){
 
   // Block
   document.getElementById('bl-total').textContent=(s.tHard+s.tSoft).toLocaleString();
+  document.getElementById('bl-hard').textContent=s.tHard.toLocaleString();
+  document.getElementById('bl-soft').textContent=s.tSoft.toLocaleString();
   document.getElementById('bl-insight').textContent='↑ Block bookings: '+(s.hBa[0]||0+s.sBa[0]||0)+' in '+l0+' → '+((s.hBa[s.hBa.length-1]||0)+(s.sBa[s.sBa.length-1]||0))+' in '+lL+' · Hard: '+s.tHard.toLocaleString()+' | Soft: '+s.tSoft.toLocaleString();
 
   // Booking health
