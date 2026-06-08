@@ -236,100 +236,49 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
 
     <!-- BUSINESS IMPACT RIBBON -->
     <div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:0">
-
-      <!-- 4 metric cards in one clean row -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1px;background:var(--border)">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;background:var(--white)">
 
         <!-- Flying hours saved -->
-        <div style="background:var(--white);padding:20px 22px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">Flying hours saved</span>
-            <span style="font-size:9px;font-weight:500;padding:2px 7px;border-radius:10px;background:var(--gc-bg);color:var(--gc);border:1px solid var(--gc-border)">Faster Delivery</span>
-          </div>
-          <div style="font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:var(--gc);line-height:1;margin-bottom:4px" id="r-hrs-saved">–</div>
-          <div style="font-size:11px;color:var(--ink-3);margin-bottom:14px">across all GC bookings</div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border)">
-            <span style="font-size:10px;color:var(--ink-4)">Saved per booking</span>
-            <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--gc)" id="r-min-saved">–</span>
-          </div>
+        <div style="padding:22px 24px;border-right:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:16px">Flying hours saved</div>
+          <div style="font-family:'DM Mono',monospace;font-size:30px;font-weight:500;color:var(--gc);line-height:1;margin-bottom:6px" id="r-hrs-saved">–</div>
+          <div style="font-size:11px;color:var(--ink-4)">across all GC bookings</div>
         </div>
 
-        <!-- Direct flights -->
-        <div style="background:var(--white);padding:20px 22px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">Direct flight bookings</span>
-            <span style="font-size:9px;font-weight:500;padding:2px 7px;border-radius:10px;background:var(--gc-bg);color:var(--gc);border:1px solid var(--gc-border)">Faster Delivery</span>
-          </div>
-          <div style="font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:var(--gc);line-height:1;margin-bottom:4px" id="r-direct-count">–</div>
-          <div style="font-size:11px;color:var(--ink-3);margin-bottom:14px">1-leg routes on GC</div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border)">
-            <span style="font-size:10px;color:var(--ink-4)">GC direct rate</span>
-            <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--gc)" id="r-direct-rate">–</span>
-          </div>
+        <!-- Direct flight bookings -->
+        <div style="padding:22px 24px;border-right:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:16px">Direct flight bookings</div>
+          <div style="font-family:'DM Mono',monospace;font-size:30px;font-weight:500;color:var(--gc);line-height:1;margin-bottom:6px" id="r-direct-count">–</div>
+          <div style="font-size:11px;color:var(--ink-4)">GC direct rate: <span style="font-weight:600;color:var(--gc)" id="r-direct-rate">–</span></div>
         </div>
 
-        <!-- Premium product split -->
-        <div style="background:var(--white);padding:20px 22px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">Premium product mix</span>
-            <span style="font-size:9px;font-weight:500;padding:2px 7px;border-radius:10px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)">Revenue</span>
+        <!-- Premium product mix -->
+        <div style="padding:22px 24px;border-right:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:16px">Premium product mix</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+            <span style="font-family:'DM Mono',monospace;font-size:30px;font-weight:500;color:var(--gc);line-height:1" id="r-gc-prem">–</span>
+            <span style="font-size:12px;color:var(--ink-3)">GC</span>
+            <span style="font-size:12px;color:var(--border)">|</span>
+            <span style="font-family:'DM Mono',monospace;font-size:20px;font-weight:400;color:var(--ink-3)" id="r-es-prem">–</span>
+            <span style="font-size:12px;color:var(--ink-3)">ES</span>
           </div>
-          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
-            <div style="font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:var(--blue);line-height:1" id="r-gc-prem">–</div>
-            <div style="font-size:11px;color:var(--ink-4)">GC &nbsp;·&nbsp; <span id="r-es-prem" style="color:var(--ink-3)">–</span> ES</div>
-          </div>
-          <div style="font-size:11px;color:var(--ink-3);margin-bottom:14px">TG Contract, Guaranteed &amp; LTF</div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border)">
-            <span style="font-size:10px;color:var(--ink-4)">GC advantage</span>
-            <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--blue)" id="r-prem-delta">–</span>
-          </div>
+          <div style="font-size:11px;color:var(--ink-4)">TG Contract, Guaranteed &amp; LTF</div>
         </div>
 
         <!-- Active agents -->
-        <div style="background:var(--white);padding:20px 22px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">Active agents</span>
-            <span style="font-size:9px;font-weight:500;padding:2px 7px;border-radius:10px;background:#fdf4ff;color:#7c3aed;border:1px solid #e9d5ff">User Friendly</span>
+        <div style="padding:22px 24px">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:16px">Active agents</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+            <span style="font-family:'DM Mono',monospace;font-size:30px;font-weight:500;color:var(--gc);line-height:1" id="r-gc-agents">–</span>
+            <span style="font-size:12px;color:var(--ink-3)">GC</span>
+            <span style="font-size:12px;color:var(--border)">|</span>
+            <span style="font-family:'DM Mono',monospace;font-size:20px;font-weight:400;color:var(--ink-3)" id="r-es-agents">–</span>
+            <span style="font-size:12px;color:var(--ink-3)">ES</span>
           </div>
-          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
-            <div style="font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:#7c3aed;line-height:1" id="r-gc-agents">–</div>
-            <div style="font-size:11px;color:var(--ink-4)">GC &nbsp;·&nbsp; <span id="r-es-agents" style="color:var(--ink-3)">–</span> ES</div>
-          </div>
-          <div style="font-size:11px;color:var(--ink-3);margin-bottom:14px">Unique agents with bookings</div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border)">
-            <span style="font-size:10px;color:var(--ink-4)">GC lead</span>
-            <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:#7c3aed" id="r-agent-delta">–</span>
-          </div>
+          <div style="font-size:11px;color:var(--ink-4)">Unique agents with bookings</div>
         </div>
-      </div>
 
-      <!-- GC migration progress bar -->
-      <div style="background:var(--surface);border-top:1px solid var(--border);padding:14px 22px 16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:11px;font-weight:600;color:var(--ink-2)">GC migration progress</span>
-            <span style="font-size:10px;color:var(--ink-4)" id="r-prog-range">Dec 2025 – Jun 2026</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-            <span style="font-size:11px;color:var(--ink-3)">Total bookings: <span style="font-family:'DM Mono',monospace;font-weight:500;color:var(--ink-2)" id="r-gc-total">–</span></span>
-            <span style="font-size:11px;color:var(--ink-3)">GC share: <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--gc)" id="r-gc-share">–</span></span>
-            <span style="font-size:11px;color:var(--ink-3)">Target: <span style="font-family:'DM Mono',monospace;font-weight:600;color:#7c3aed">80%</span></span>
-          </div>
-        </div>
-        <!-- Progress bar -->
-        <div style="position:relative;height:10px;background:var(--white);border-radius:6px;border:1px solid var(--border);overflow:hidden">
-          <div id="r-prog-bar" style="position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#0a6640,#1D9E75);border-radius:6px;transition:width .8s ease;width:0%"></div>
-          <!-- 80% target line — inside bar container -->
-          <div style="position:absolute;left:80%;top:0;width:2px;height:100%;background:#7c3aed;opacity:.6;z-index:1"></div>
-        </div>
-        <!-- Labels below bar — positioned correctly -->
-        <div style="position:relative;height:16px;margin-top:4px">
-          <span style="position:absolute;left:0;font-size:10px;color:var(--ink-4)">0%</span>
-          <span style="position:absolute;left:80%;transform:translateX(-50%);font-size:10px;color:#7c3aed;font-weight:500;white-space:nowrap">80% target</span>
-          <span style="position:absolute;right:0;font-size:10px;color:var(--ink-4)">100%</span>
-        </div>
       </div>
-
     </div>
   </div>
 
@@ -1143,21 +1092,15 @@ function updateDOM(){
   var ribbonDiff=n(s.esDAll)-n(s.gcDAll);
   var ribbonHrs=Math.round(n(s.tGC)*ribbonDiff/60);
   el('r-hrs-saved', ribbonHrs>0?ribbonHrs.toLocaleString()+'h':'–');
-  el('r-min-saved', ribbonDiff>0?ribbonDiff+' min / booking':'–');
   el('r-direct-count', ns(s.gcDirAll||s.gcDiAll));
   el('r-direct-rate', pct(s.gcDPAll));
   el('r-gc-prem', pct(s.gcPremP));
   el('r-es-prem', pct(s.esPremP));
-  var premDelta=r1(n(s.gcPremP)-n(s.esPremP));
-  el('r-prem-delta', (premDelta>0?'+':'')+premDelta+'pp vs ES');
   el('r-gc-agents', ns(s.gcAg));
   el('r-es-agents', ns(s.esAg));
-  var agentDelta=n(s.gcAg)-n(s.esAg);
-  el('r-agent-delta', (agentDelta>0?'+':'')+agentDelta+' more on GC');
   el('r-gc-total', ns(s.tGC));
   var latestShare=n((s.sh||[])[(s.sh||[]).length-1]);
   el('r-gc-share', latestShare+'%');
-  var progBar=document.getElementById('r-prog-bar'); if(progBar) progBar.style.width=Math.min(latestShare,100)+'%';
   if(l0&&lL){var pr=document.getElementById('r-prog-range'); if(pr) pr.textContent=l0+' – '+lL;}
 
   // Overview share bar
