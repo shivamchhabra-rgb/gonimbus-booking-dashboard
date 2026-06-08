@@ -4,80 +4,157 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Teleport — Platform Performance Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --gc:#1D9E75;--gc-light:rgba(29,158,117,0.12);
-  --es:#D85A30;--es-light:rgba(216,90,48,0.12);
-  --text:#1a1a1a;--text-sec:#6b6b6b;--text-ter:#9a9a9a;
-  --bg:#f7f6f2;--surface:#fff;--border:rgba(0,0,0,0.1);
-  --radius:12px;--radius-sm:8px;
+  --ink:#111318;--ink-2:#3d4148;--ink-3:#6b7280;--ink-4:#9ca3af;
+  --surface:#f7f6f3;--white:#ffffff;--border:#e5e3dd;--border-2:#d1cfc8;
+  --gc:#0a6640;--gc-bg:#ecfdf5;--gc-border:#a7f3d0;--gc-line:#1D9E75;
+  --es:#92400e;--es-bg:#fffbeb;--es-border:#fcd34d;--es-line:#D85A30;
+  --blue:#1a56db;--blue-bg:#eff6ff;--blue-border:#bfdbfe;
+  --amber:#92400e;--amber-bg:#fffbeb;--amber-border:#fcd34d;
+  --red:#991b1b;--red-bg:#fef2f2;--red-border:#fecaca;
+  --radius:8px;--radius-lg:12px;
 }
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:24px;min-height:100vh}
-.db{max-width:1100px;margin:0 auto}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink);font-size:14px;line-height:1.6}
+.layout{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
 
-#loader{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
-.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--gc);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:14px}
+/* LOADER */
+#loader{position:fixed;inset:0;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
+.spinner{width:32px;height:32px;border:2.5px solid var(--border);border-top-color:var(--gc-line);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:12px}
 @keyframes spin{to{transform:rotate(360deg)}}
-#loader p{font-size:13px;color:var(--text-sec)}
-#loader small{font-size:11px;color:var(--text-ter);margin-top:4px}
+#loader p{font-size:13px;color:var(--ink-3)}
+#loader small{font-size:11px;color:var(--ink-4);margin-top:4px}
 
-.top-bar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px}
-.db-title{font-size:20px;font-weight:600;color:var(--text)}
-.db-meta{font-size:12px;color:var(--text-ter);margin-top:3px}
-.live-dot{display:inline-block;width:7px;height:7px;background:var(--gc);border-radius:50%;margin-right:5px;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-.last-updated{font-size:11px;color:var(--text-ter);margin-top:3px}
+/* SIDEBAR */
+.sidebar{background:var(--white);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar-brand{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.brand-tag{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-4);margin-bottom:4px}
+.brand-title{font-size:13px;font-weight:500;color:var(--ink);line-height:1.3}
+.brand-meta{font-size:11px;color:var(--ink-4);margin-top:2px}
+.nav-section{padding:0 12px;margin-bottom:4px}
+.nav-section-label{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-4);padding:8px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;font-size:12px;color:var(--ink-3);cursor:pointer;text-decoration:none;transition:background .15s,color .15s}
+.nav-item:hover{background:var(--surface);color:var(--ink-2)}
+.nav-item.active{background:var(--gc-bg);color:var(--gc);font-weight:500}
+.nav-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
-/* Filter bar — single unified row */
-.filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:12px;display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
-.filter-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:130px}
-.filter-group.date-group{min-width:150px;flex:1.2}
-.filter-label{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-ter)}
-.filter-select,.filter-date{font-size:12px;font-weight:500;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;width:100%;transition:border-color 0.15s}
-.filter-select{padding-right:28px;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239a9a9a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-color:var(--bg)}
-.filter-select:focus,.filter-date:focus{outline:none;border-color:var(--gc)}
-.filter-select.active,.filter-date.active{border-color:var(--gc);background-color:#f0faf6}
-.filter-divider{width:1px;background:var(--border);align-self:stretch;margin:0 2px}
-.filter-reset{font-size:12px;font-weight:500;padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-sec);cursor:pointer;white-space:nowrap;align-self:flex-end;transition:all 0.15s}
-.filter-reset:hover{border-color:var(--es);color:var(--es)}
+/* FILTERS in sidebar */
+.sidebar-filters{padding:12px 16px;border-top:1px solid var(--border);margin-top:8px}
+.sf-label{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:8px}
+.sf-group{margin-bottom:10px}
+.sf-group label{font-size:11px;color:var(--ink-3);display:block;margin-bottom:3px}
+.sf-input{font-size:11px;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--ink);width:100%;cursor:pointer}
+.sf-input:focus{outline:none;border-color:var(--gc-line)}
+.sf-input.active{border-color:var(--gc-line);background:var(--gc-bg)}
+.sf-reset{font-size:11px;font-weight:500;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--ink-3);cursor:pointer;width:100%;margin-top:4px}
+.sf-reset:hover{border-color:var(--es-line);color:var(--es-line)}
+.filter-count{display:inline-block;font-size:10px;font-weight:500;background:var(--gc-bg);color:var(--gc);border-radius:10px;padding:1px 6px;margin-left:4px}
 
-/* Active tags */
-.active-bar{display:none;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;padding:8px 14px;background:#f0faf6;border:1px solid rgba(29,158,117,0.2);border-radius:8px;font-size:11px;color:var(--text-sec)}
-.active-bar.visible{display:flex}
-.filter-tag{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid rgba(29,158,117,0.3);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:500;color:var(--gc)}
+/* MAIN */
+.main{padding:36px 44px;max-width:880px}
 
-/* Sections & cards */
-.sec{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-ter);margin:20px 0 10px}
-.krow{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px}
-.kpi{background:var(--surface);border-radius:var(--radius-sm);padding:16px;border:1px solid var(--border)}
-.kl{font-size:11px;color:var(--text-sec);margin-bottom:6px}
-.kv{font-size:24px;font-weight:600}
-.ks{font-size:11px;color:var(--text-ter);margin-top:4px}
-.pos{color:var(--gc)}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:12px}
-.ct{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
-.cs{font-size:11px;color:var(--text-sec);margin-bottom:14px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.lgnd{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px}
-.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-sec)}
-.dot{width:10px;height:10px;border-radius:2px;display:inline-block}
-.slbl{display:flex;justify-content:space-between;font-size:12px;color:var(--text-sec);margin-bottom:5px}
-.vs-bar{display:flex;height:36px;border-radius:8px;overflow:hidden}
-.vs-gc{background:var(--gc);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;transition:width 0.5s;min-width:40px}
-.vs-es{background:var(--es);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;transition:width 0.5s;min-width:40px}
-.pill{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:8px;vertical-align:middle;background:#E1F5EE;color:#0F6E56}
-.mini-row{display:flex;gap:20px;margin-top:6px}
-.mil{font-size:10px;color:var(--text-sec);margin-bottom:3px}
-.miv{font-size:26px;font-weight:600}
-.vdiv{border-left:1px solid var(--border);margin:0 4px}
-.note{font-size:10px;color:var(--text-ter);margin-top:12px;line-height:1.6}
+/* PAGE HEADER */
+.page-header{margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.page-eyebrow{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--gc-line);margin-bottom:6px}
+.page-title{font-size:26px;font-weight:300;color:var(--ink);line-height:1.2;margin-bottom:8px}
+.page-title strong{font-weight:500}
+.page-meta{font-size:12px;color:var(--ink-4);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.meta-pill{display:inline-flex;align-items:center;gap:4px;background:var(--white);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--ink-3)}
+.live-dot{width:6px;height:6px;background:var(--gc-line);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* STAT STRIP */
+.stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:32px}
+.stat-cell{background:var(--white);padding:14px 16px}
+.stat-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:var(--ink);line-height:1;margin-bottom:4px}
+.stat-val.green{color:var(--gc)}
+.stat-lbl{font-size:11px;color:var(--ink-3)}
+.stat-sub{font-size:10px;color:var(--ink-4);margin-top:2px}
+
+/* SECTION */
+.section{margin-bottom:40px;scroll-margin-top:24px}
+.section-label{font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* METRIC CARD */
+.metric-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:16px;overflow:hidden}
+.metric-card-header{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.metric-tag{display:inline-block;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:4px;margin-bottom:5px}
+.tag-green{background:var(--gc-bg);color:var(--gc)}
+.tag-amber{background:var(--amber-bg);color:var(--amber)}
+.tag-blue{background:var(--blue-bg);color:var(--blue)}
+.metric-name{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:3px}
+.metric-stream{font-size:11px;color:var(--ink-3);font-style:italic}
+.metric-current{text-align:right;flex-shrink:0}
+.metric-current-val{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--ink);line-height:1}
+.metric-current-val.green{color:var(--gc)}
+.metric-current-lbl{font-size:10px;color:var(--ink-4);margin-top:3px}
+
+/* CHART AREA */
+.chart-area{padding:16px 20px;border-bottom:1px solid var(--border)}
+.chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.cleg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-3)}
+.cleg-dot{width:9px;height:9px;border-radius:2px;display:inline-block}
 .cw{position:relative;width:100%}
-.trend-up{font-size:11px;color:var(--gc);font-weight:500;margin-top:8px}
+.chart-insight{font-size:11px;color:var(--gc);font-weight:500;margin-top:8px;padding:6px 10px;background:var(--gc-bg);border-radius:6px;border-left:3px solid var(--gc-line)}
 
-@media(max-width:700px){.two{grid-template-columns:1fr};body{padding:16px};.filter-bar{gap:10px}}
+/* PERIOD ROW */
+.period-row{display:flex;gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+.period-cell{flex:1;background:var(--surface);padding:8px 12px;text-align:center}
+.period-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--ink-2)}
+.period-lbl{font-size:10px;color:var(--ink-4);margin-top:1px}
+
+/* OUTCOME */
+.outcome-row{padding:12px 20px;border-bottom:1px solid var(--border);background:var(--gc-bg)}
+.outcome-label{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--gc);margin-bottom:3px}
+.outcome-text{font-size:12px;color:var(--ink-2);line-height:1.6}
+
+/* LEVER */
+.lever{padding:14px 20px;border-bottom:1px solid var(--border)}
+.lever:last-child{border-bottom:none}
+.lever-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.lever-id{font-size:10px;font-weight:500;font-family:'DM Mono',monospace;background:var(--surface);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:var(--ink-3);flex-shrink:0}
+.lever-title{font-size:13px;font-weight:500;color:var(--ink)}
+.lever-body{font-size:12px;color:var(--ink-2);line-height:1.7;margin-bottom:6px}
+.lever-impact{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:2px 9px;border-radius:20px}
+.impact-green{background:var(--gc-bg);color:var(--gc);border:1px solid var(--gc-border)}
+.impact-amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.impact-blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.levers-section{border-top:1px solid var(--border)}
+.levers-title{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);padding:10px 20px 0}
+
+/* WELL / IMPROVE */
+.wi-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-top:1px solid var(--border)}
+.wi-cell{padding:14px 18px;background:var(--white)}
+.wi-title{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.wi-title.green{color:var(--gc)}
+.wi-title.amber{color:var(--amber)}
+.wi-item{font-size:12px;color:var(--ink-2);line-height:1.6;padding:4px 0;border-bottom:1px solid var(--border);display:flex;gap:6px}
+.wi-item:last-child{border-bottom:none}
+.wi-bullet{flex-shrink:0;margin-top:5px;width:5px;height:5px;border-radius:50%}
+.bullet-green{background:var(--gc-line)}
+.bullet-amber{background:#d97706}
+
+/* MINI TABLE */
+.mini-table{width:100%;border-collapse:collapse;font-size:11px;margin:8px 0}
+.mini-table th{background:var(--surface);color:var(--ink-3);font-weight:500;padding:5px 10px;text-align:left;border-bottom:1px solid var(--border);font-family:'DM Sans',sans-serif}
+.mini-table td{padding:5px 10px;border-bottom:1px solid var(--border);color:var(--ink-2);font-family:'DM Mono',monospace;font-size:11px}
+.mini-table tr:last-child td{border-bottom:none}
+.td-label{font-family:'DM Sans',sans-serif !important;color:var(--ink-2) !important}
+.pos-val{color:var(--gc) !important;font-weight:500}
+.neg-val{color:#dc2626 !important}
+
+/* VS bar */
+.vs-wrap{padding:0 20px 14px}
+.vs-lbl-row{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);margin-bottom:4px}
+.vs-bar{display:flex;height:32px;border-radius:6px;overflow:hidden}
+.vs-gc{background:var(--gc-line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#fff;transition:width .5s;min-width:36px}
+.vs-es{background:var(--es-line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#fff;transition:width .5s;min-width:36px}
+
+@media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}.main{padding:24px 20px}.wi-row{grid-template-columns:1fr}.stat-strip{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -88,243 +165,628 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <small id="loader-status">Connecting...</small>
 </div>
 
-<div class="db" id="dashboard" style="display:none">
+<div class="layout" id="dashboard" style="display:none">
 
-  <div class="top-bar">
-    <div>
-      <div class="db-title">Platform Performance Dashboard</div>
-      <div class="db-meta"><span class="live-dot"></span>Live data · <span id="meta-range">–</span> · <span id="meta-total">–</span> bookings</div>
-      <div class="last-updated">Last fetched: <span id="last-fetched">–</span></div>
-    </div>
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-tag">GoNimbus · Teleport</div>
+    <div class="brand-title">Platform Performance</div>
+    <div class="brand-meta" id="sb-meta">Dec 2025 – Jun 2026</div>
   </div>
 
-  <!-- Filter bar -->
-  <div class="filter-bar">
-    <div class="filter-group date-group">
-      <div class="filter-label">From date</div>
-      <input type="date" class="filter-date" id="f-from" onchange="applyFilters()">
-    </div>
-    <div class="filter-group date-group">
-      <div class="filter-label">To date</div>
-      <input type="date" class="filter-date" id="f-to" onchange="applyFilters()">
-    </div>
-    <div class="filter-divider"></div>
-    <div class="filter-group">
-      <div class="filter-label">Source</div>
-      <select class="filter-select" id="f-source" onchange="applyFilters()">
+  <div class="nav-section">
+    <div class="nav-section-label">Overview</div>
+    <a class="nav-item" href="#overview"><span class="nav-dot" style="background:#1a56db"></span>Summary</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-label">Business streams</div>
+    <a class="nav-item" href="#product-type"><span class="nav-dot" style="background:#16a34a"></span>Product type</a>
+    <a class="nav-item" href="#gc-growth"><span class="nav-dot" style="background:#0891b2"></span>GC growth</a>
+    <a class="nav-item" href="#direct-flights"><span class="nav-dot" style="background:#7c3aed"></span>Direct flights</a>
+    <a class="nav-item" href="#route-duration"><span class="nav-dot" style="background:#d97706"></span>Route duration</a>
+    <a class="nav-item" href="#block-util"><span class="nav-dot" style="background:#0c447c"></span>Block utilisation</a>
+    <a class="nav-item" href="#booking-health"><span class="nav-dot" style="background:#dc2626"></span>Booking health</a>
+    <a class="nav-item" href="#agent-base"><span class="nav-dot" style="background:#6b7280"></span>Agent base</a>
+  </div>
+
+  <div class="sidebar-filters">
+    <div class="sf-label">Filters <span class="filter-count" id="fc" style="display:none">0</span></div>
+    <div class="sf-group"><label>From date</label><input type="date" class="sf-input" id="f-from" onchange="applyFilters()"></div>
+    <div class="sf-group"><label>To date</label><input type="date" class="sf-input" id="f-to" onchange="applyFilters()"></div>
+    <div class="sf-group"><label>Source</label>
+      <select class="sf-input" id="f-source" onchange="applyFilters()">
         <option value="all">All platforms</option>
         <option value="GC">GC only</option>
         <option value="ES">ES only</option>
       </select>
     </div>
-    <div class="filter-group">
-      <div class="filter-label">Product type</div>
-      <select class="filter-select" id="f-product" onchange="applyFilters()">
-        <option value="all">All product types</option>
-      </select>
+    <div class="sf-group"><label>Product type</label>
+      <select class="sf-input" id="f-product" onchange="applyFilters()"><option value="all">All types</option></select>
     </div>
-    <div class="filter-group">
-      <div class="filter-label">Booking status</div>
-      <select class="filter-select" id="f-status" onchange="applyFilters()">
-        <option value="all">All statuses</option>
-      </select>
+    <div class="sf-group"><label>Booking status</label>
+      <select class="sf-input" id="f-status" onchange="applyFilters()"><option value="all">All statuses</option></select>
     </div>
-    <button class="filter-reset" onclick="resetFilters()">↺ Reset</button>
+    <button class="sf-reset" onclick="resetFilters()">↺ Reset filters</button>
   </div>
+</aside>
 
-  <!-- Active tags -->
-  <div class="active-bar" id="activeBar">
-    <span style="font-weight:600;color:var(--gc)">Filtered:</span>
-    <span id="activeTags"></span>
-  </div>
+<!-- ═══ MAIN ═══ -->
+<main class="main">
 
-  <!-- KPIs -->
-  <div class="krow">
-    <div class="kpi"><div class="kl">GC bookings</div><div class="kv pos" id="k-gc">–</div><div class="ks" id="k-gc-sub">–</div></div>
-    <div class="kpi"><div class="kl">ES bookings</div><div class="kv" id="k-es">–</div><div class="ks" id="k-es-sub">–</div></div>
-    <div class="kpi"><div class="kl">GC acceptance rate</div><div class="kv pos" id="k-gcacc">–</div></div>
-    <div class="kpi"><div class="kl">ES acceptance rate</div><div class="kv" id="k-esacc">–</div></div>
-  </div>
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-eyebrow">Business Performance Report</div>
+    <div class="page-title">GC Platform — <strong>Teleport Review</strong></div>
+    <div class="page-meta">
+      <span class="meta-pill"><span class="live-dot"></span>&nbsp;Live data</span>
+      <span class="meta-pill" id="meta-range">Dec 2025 – Jun 2026</span>
+      <span class="meta-pill"><span id="meta-total">–</span> bookings</span>
+      <span class="meta-pill">Fetched <span id="last-fetched">–</span></span>
+    </div>
 
-  <!-- Platform split -->
-  <div class="card">
-    <div class="ct">Share of bookings</div>
-    <div class="cs" id="shareSubtitle">–</div>
-    <div class="slbl"><span id="gcShareLbl">GC –%</span><span id="esShareLbl">ES –%</span></div>
-    <div class="vs-bar">
-      <div class="vs-gc" id="gcBar" style="width:50%">–</div>
-      <div class="vs-es" id="esBar" style="width:50%">–</div>
-    </div>
-    <div class="lgnd" style="margin-top:12px;margin-bottom:0">
-      <span class="leg"><span class="dot" style="background:var(--gc)"></span>GC</span>
-      <span class="leg"><span class="dot" style="background:var(--es)"></span>ES</span>
-    </div>
-  </div>
-
-  <!-- GC Growth -->
-  <div class="sec">GC booking growth</div>
-  <div class="card">
-    <div class="ct">GC monthly booking volume</div>
-    <div class="cs" id="gcGrowthSub">–</div>
-    <div class="lgnd">
-      <span class="leg"><span class="dot" style="background:var(--gc)"></span>GC bookings</span>
-      <span class="leg"><span class="dot" style="background:#85B7EB"></span>GC share of total %</span>
-    </div>
-    <div class="cw" style="height:230px"><canvas id="gcGrowthChart"></canvas></div>
-    <div class="trend-up" id="gcGrowthLabel">–</div>
-  </div>
-
-  <!-- Direct flights -->
-  <div class="sec">Direct flight bookings</div>
-  <div class="card">
-    <div class="ct">GC direct flight bookings — monthly trend</div>
-    <div class="cs">1-leg direct bookings processed through GC each month</div>
-    <div class="lgnd">
-      <span class="leg"><span class="dot" style="background:var(--gc)"></span>Direct bookings (count)</span>
-      <span class="leg"><span class="dot" style="background:#85B7EB"></span>Direct flight rate %</span>
-    </div>
-    <div class="cw" style="height:220px"><canvas id="directTrendChart"></canvas></div>
-    <div class="trend-up" id="directTrendLabel">–</div>
-  </div>
-  <div class="two" style="margin-bottom:12px">
-    <div class="card" style="margin-bottom:0">
-      <div class="ct">Direct flight rate <span class="pill" id="directDelta">–</span></div>
-      <div class="cs">% of AWBs on 1-leg routes</div>
-      <div class="lgnd"><span class="leg"><span class="dot" style="background:var(--gc)"></span>GC</span><span class="leg"><span class="dot" style="background:var(--es)"></span>ES</span></div>
-      <div class="cw" style="height:140px"><canvas id="directChart"></canvas></div>
-    </div>
-    <div class="card" style="margin-bottom:0">
-      <div class="ct">Avg legs per AWB</div>
-      <div class="cs">Fewer legs = more efficient routing</div>
-      <div class="mini-row">
-        <div><div class="mil">GC</div><div class="miv pos" id="k-gclegs">–</div></div>
-        <div class="vdiv"></div>
-        <div><div class="mil">ES</div><div class="miv" id="k-eslegs">–</div></div>
+    <!-- STAT STRIP -->
+    <div class="stat-strip">
+      <div class="stat-cell">
+        <div class="stat-val green" id="s-gcshare">–</div>
+        <div class="stat-lbl">GC share (latest month)</div>
+        <div class="stat-sub">vs 10.7% in Dec 2025</div>
       </div>
-      <div class="note">GC's dynamic route engine surfaces shorter paths, reducing transit stops across the network.</div>
-    </div>
-  </div>
-
-  <!-- Route duration -->
-  <div class="sec">Route duration</div>
-  <div class="card">
-    <div class="ct">Average route duration — monthly comparison</div>
-    <div class="cs">Average minutes from origin to destination (accepted bookings)</div>
-    <div class="lgnd">
-      <span class="leg"><span class="dot" style="background:var(--gc)"></span>GC</span>
-      <span class="leg"><span class="dot" style="background:var(--es)"></span>ES</span>
-    </div>
-    <div class="cw" style="height:220px"><canvas id="trendChart"></canvas></div>
-    <div class="trend-up" id="durationTrendLabel">–</div>
-  </div>
-  <div class="two" style="margin-bottom:12px">
-    <div class="card" style="margin-bottom:0">
-      <div class="ct">Avg route duration <span class="pill" id="durDelta">–</span></div>
-      <div class="cs">Minutes, origin to destination (overall)</div>
-      <div class="lgnd"><span class="leg"><span class="dot" style="background:var(--gc)"></span>GC</span><span class="leg"><span class="dot" style="background:var(--es)"></span>ES</span></div>
-      <div class="cw" style="height:140px"><canvas id="durationChart"></canvas></div>
-    </div>
-    <div class="card" style="margin-bottom:0">
-      <div class="ct">Waitlist rate</div>
-      <div class="cs">% bookings on waitlist</div>
-      <div class="mini-row">
-        <div><div class="mil">GC</div><div class="miv" id="k-gcwait">–</div></div>
-        <div class="vdiv"></div>
-        <div><div class="mil">ES</div><div class="miv" id="k-eswait">–</div></div>
+      <div class="stat-cell">
+        <div class="stat-val green" id="s-gcvol">–</div>
+        <div class="stat-lbl">GC bookings</div>
+        <div class="stat-sub" id="s-gcvol-sub">All months</div>
       </div>
-      <div class="note">GC surfaces a broader set of routes including block options — resulting in more bookings attempted on high-demand flights.</div>
-    </div>
-  </div>
-
-  <!-- Product mix -->
-  <div class="sec">Product type breakdown</div>
-  <div class="card">
-    <div class="ct">Booking count by product type — GC vs ES</div>
-    <div class="cs">Absolute number of bookings per product category on each platform</div>
-    <div class="lgnd">
-      <span class="leg"><span class="dot" style="background:var(--gc)"></span>GC</span>
-      <span class="leg"><span class="dot" style="background:var(--es)"></span>ES</span>
-    </div>
-    <div class="cw" style="height:280px"><canvas id="productChart"></canvas></div>
-  </div>
-  <div class="two" style="margin-bottom:12px">
-    <div class="card" style="margin-bottom:0">
-      <div class="ct">TG Contract bookings</div>
-      <div class="cs">Total TG Contract bookings per platform</div>
-      <div class="mini-row">
-        <div><div class="mil">GC</div><div class="miv pos" id="k-gctg">–</div></div>
-        <div class="vdiv"></div>
-        <div><div class="mil">ES</div><div class="miv" id="k-estg">–</div></div>
+      <div class="stat-cell">
+        <div class="stat-val" id="s-dur">–</div>
+        <div class="stat-lbl">GC avg route duration</div>
+        <div class="stat-sub" id="s-dur-sub">vs ES –</div>
       </div>
-      <div class="note">GC has processed TG Contract bookings since launch, with volume growing as more agents migrate.</div>
-    </div>
-    <div class="card" style="margin-bottom:0">
-      <div class="ct">Premium product mix</div>
-      <div class="cs">TG Contract + Guaranteed + LTF as % of total</div>
-      <div class="mini-row">
-        <div><div class="mil">GC</div><div class="miv pos" id="k-gcprem">–</div></div>
-        <div class="vdiv"></div>
-        <div><div class="mil">ES</div><div class="miv" id="k-esprem">–</div></div>
+      <div class="stat-cell">
+        <div class="stat-val green" id="s-block">–</div>
+        <div class="stat-lbl">Block bookings</div>
+        <div class="stat-sub">Hard + soft (GC only)</div>
       </div>
-      <div class="note">A higher share of GC bookings are in premium product categories relative to overall volume.</div>
     </div>
   </div>
 
-  <!-- Block -->
-  <div class="sec">Block utilisation</div>
-  <div class="card">
-    <div class="ct">GC block bookings — monthly growth <span class="pill">GC capability</span></div>
-    <div class="cs">Hard block and soft block bookings available through GC</div>
-    <div class="lgnd">
-      <span class="leg"><span class="dot" style="background:#0C447C"></span>Hard block</span>
-      <span class="leg"><span class="dot" style="background:#85B7EB"></span>Soft block</span>
+  <!-- ─── OVERVIEW ─── -->
+  <div class="section" id="overview">
+    <div class="section-label">Overview — Platform split</div>
+    <div class="metric-card">
+      <div class="metric-card-header">
+        <div>
+          <div class="metric-tag tag-green">Migration</div>
+          <div class="metric-name">Share of bookings — GC vs ES</div>
+          <div class="metric-stream">GC crossed 50% share in April 2026. Full migration is the end state.</div>
+        </div>
+        <div class="metric-current">
+          <div class="metric-current-val green" id="ov-gcpct">–</div>
+          <div class="metric-current-lbl">GC share</div>
+        </div>
+      </div>
+      <div class="vs-wrap" style="padding-top:14px">
+        <div class="vs-lbl-row"><span id="ov-gclbl">GC –%</span><span id="ov-eslbl">ES –%</span></div>
+        <div class="vs-bar"><div class="vs-gc" id="gcBar">–</div><div class="vs-es" id="esBar">–</div></div>
+      </div>
+      <div class="period-row" id="shareRow"></div>
+      <div class="wi-row">
+        <div class="wi-cell">
+          <div class="wi-title green">✓ &nbsp;What went well</div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>GC grew from 10.7% to 75.4% share in 7 months — exceptional migration velocity</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>April 2026 inflection point: GC overtook ES for the first time at 51.5%</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Agent base on GC (802) already exceeds ES (763)</span></div>
+        </div>
+        <div class="wi-cell">
+          <div class="wi-title amber">→ &nbsp;How to improve</div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Identify which agent segments (route, country) still predominantly on ES and design targeted migration sprints</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>eCommerce migration has now started in June — support this cohort for better conversion</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Track agents who've migrated but occasionally revert to ES — resolve friction points</span></div>
+        </div>
+      </div>
     </div>
-    <div class="cw" style="height:200px"><canvas id="blockChart"></canvas></div>
-    <div class="trend-up" id="blockLabel">–</div>
   </div>
 
-  <!-- Agent base -->
-  <div class="sec">Agent base</div>
-  <div class="krow">
-    <div class="kpi"><div class="kl">GC unique agents</div><div class="kv pos" id="k-gcagents">–</div><div class="ks">Active on platform</div></div>
-    <div class="kpi"><div class="kl">ES unique agents</div><div class="kv" id="k-esagents">–</div><div class="ks">Active on platform</div></div>
-    <div class="kpi"><div class="kl">GC direct bookings</div><div class="kv pos" id="k-gcdirect">–</div><div class="ks">1-leg routes</div></div>
-    <div class="kpi"><div class="kl">GC transit bookings</div><div class="kv" id="k-gctransit">–</div><div class="ks">2+ leg routes</div></div>
+  <!-- ─── 1. PRODUCT TYPE ─── -->
+  <div class="section" id="product-type">
+    <div class="section-label">1 · Product type — Revenue yield</div>
+    <div class="metric-card">
+      <div class="metric-card-header">
+        <div>
+          <div class="metric-tag tag-green">Revenue yield</div>
+          <div class="metric-name">Booking count by product type — GC vs ES</div>
+          <div class="metric-stream">Higher-tier products (TG Contract, Teleport Guaranteed, LTF/Flowers) carry premium rates. A platform handling more of these protects Teleport's top-line revenue.</div>
+        </div>
+        <div class="metric-current">
+          <div class="metric-current-val green" id="pt-gcprem">–</div>
+          <div class="metric-current-lbl">GC premium mix</div>
+        </div>
+      </div>
+      <div class="outcome-row">
+        <div class="outcome-label">Outcome</div>
+        <div class="outcome-text">GC processes a higher proportion of premium product bookings relative to its total volume than ES — demonstrating the platform is commercially ready for Teleport's most important cargo types.</div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-legend">
+          <span class="cleg"><span class="cleg-dot" style="background:var(--gc-line)"></span>GC</span>
+          <span class="cleg"><span class="cleg-dot" style="background:var(--es-line)"></span>ES</span>
+        </div>
+        <div class="cw" style="height:260px"><canvas id="productChart"></canvas></div>
+        <div class="chart-insight">GC premium mix 15.5% vs ES 12.4% — higher share of high-yield products despite being in growth phase</div>
+      </div>
+      <table class="mini-table" style="margin:0">
+        <thead><tr><th>Product</th><th>GC bookings</th><th>ES bookings</th><th>GC mix %</th></tr></thead>
+        <tbody>
+          <tr><td class="td-label">TG Contract</td><td class="pos-val" id="pt-tg-gc">–</td><td id="pt-tg-es">–</td><td id="pt-tg-pct">–</td></tr>
+          <tr><td class="td-label">Teleport Guaranteed</td><td id="pt-tpg-gc">–</td><td id="pt-tpg-es">–</td><td>–</td></tr>
+          <tr><td class="td-label">LTF / Flowers</td><td id="pt-ltf-gc">–</td><td id="pt-ltf-es">–</td><td>–</td></tr>
+          <tr><td class="td-label">Teleport eCommerce</td><td id="pt-ec-gc">–</td><td class="neg-val" id="pt-ec-es">–</td><td>–</td></tr>
+          <tr><td class="td-label">Basic Uplift</td><td id="pt-bu-gc">–</td><td id="pt-bu-es">–</td><td>–</td></tr>
+        </tbody>
+      </table>
+      <div class="levers-section">
+        <div class="levers-title">Levers driving the metric</div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-01</span><span class="lever-title">Modal-driven product confirmation</span></div>
+          <div class="lever-body">For Teleport Guaranteed, a modal on the basic detail page promises a confirmed booking upon product selection — agents can apply or opt out. This commitment mechanism increases premium product adoption.</div>
+          <span class="lever-impact impact-green">↑ Revenue yield</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-02</span><span class="lever-title">Validation rules at booking</span></div>
+          <div class="lever-body">SHC checks and commodity restrictions applied at point of booking prevent premium cargo from being accepted on ineligible routes — protecting product integrity.</div>
+          <span class="lever-impact impact-blue">↑ Compliance</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-03</span><span class="lever-title">Block allocation for TG Contract</span></div>
+          <div class="lever-body">TG Contract cargo relies on hard block availability. GC's block management gives commercial teams visibility and control over how block space is allocated to TG vs open market.</div>
+          <span class="lever-impact impact-green">↑ Revenue yield</span>
+        </div>
+      </div>
+      <div class="wi-row">
+        <div class="wi-cell">
+          <div class="wi-title green">✓ &nbsp;What went well</div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>GC premium mix (15.5%) exceeds ES (12.4%) despite being in growth phase</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>TG Contract bookings growing month-on-month in line with GC volume</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>LTF/Flowers proportionally higher in GC — time-sensitive perishables handled well</span></div>
+        </div>
+        <div class="wi-cell">
+          <div class="wi-title amber">→ &nbsp;How to improve</div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>eCommerce gap is the biggest opportunity — 32,659 bookings on ES vs 1,840 on GC. Migration started June 2026 — support this cohort</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>FLEXI and Next Day underrepresented in GC (633 vs 1,309 | 428 vs 1,084) — time-sensitive products where GC adds most value</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Track if TG agents are lagging behind general agents in migration as GC crosses 65%</span></div>
+        </div>
+      </div>
+    </div>
   </div>
 
+  <!-- ─── 2. GC GROWTH ─── -->
+  <div class="section" id="gc-growth">
+    <div class="section-label">2 · GC booking growth — Migration completion</div>
+    <div class="metric-card">
+      <div class="metric-card-header">
+        <div>
+          <div class="metric-tag tag-blue">Migration</div>
+          <div class="metric-name">GC monthly booking volume + share</div>
+          <div class="metric-stream">Migration speed determines how quickly Teleport realises GC's benefits. Stalled migration = delayed ROI.</div>
+        </div>
+        <div class="metric-current">
+          <div class="metric-current-val green" id="gg-vol">–</div>
+          <div class="metric-current-lbl">GC bookings (latest month)</div>
+        </div>
+      </div>
+      <div class="outcome-row">
+        <div class="outcome-label">Outcome</div>
+        <div class="outcome-text">GC becomes the primary platform with ES decommissioned or kept as fallback. Crossing 80% share is the next structural milestone; full migration is the end state.</div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-legend">
+          <span class="cleg"><span class="cleg-dot" style="background:var(--gc-line)"></span>GC bookings</span>
+          <span class="cleg"><span class="cleg-dot" style="background:#85B7EB"></span>GC share %</span>
+        </div>
+        <div class="cw" style="height:220px"><canvas id="gcGrowthChart"></canvas></div>
+        <div class="chart-insight" id="gg-insight">–</div>
+      </div>
+      <div class="period-row" id="gcShareMonthRow"></div>
+      <div class="levers-section">
+        <div class="levers-title">Levers driving the metric</div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-01</span><span class="lever-title">Agent onboarding velocity</span></div>
+          <div class="lever-body">GC has 802 unique agents vs ES 763. Active recruitment and training drives booking volume. Speed from sign-up to first booking is the key conversion metric.</div>
+          <span class="lever-impact impact-green">↑ Volume</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-02</span><span class="lever-title">Feature completeness</span></div>
+          <div class="lever-body">Agents migrate fully only when GC supports their complete workflow. Each new feature (interline, block, claims, CCA) removes a reason to stay on ES.</div>
+          <span class="lever-impact impact-blue">↑ Retention</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-03</span><span class="lever-title">Support quality at onboarding</span></div>
+          <div class="lever-body">Friction in new agent onboarding (login, training, first booking) directly slows migration. Fast resolution of early issues retains the agent base.</div>
+          <span class="lever-impact impact-amber">↓ Churn risk</span>
+        </div>
+      </div>
+      <div class="wi-row">
+        <div class="wi-cell">
+          <div class="wi-title green">✓ &nbsp;What went well</div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>GC grew from 10.7% to 75.4% share in 7 months — exceptional velocity</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>April 2026: GC overtook ES for the first time (51.5% vs 48.5%)</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Agent footprint already larger than ES — volume will follow</span></div>
+        </div>
+        <div class="wi-cell">
+          <div class="wi-title amber">→ &nbsp;How to improve</div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Remaining 25% on ES — segment by route and country, design targeted sprints</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>eCommerce bookings now flowing through GC from June — requires dedicated support for conversion quality</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Track agents who've migrated but still revert to ES — resolve friction points causing fall-back behaviour</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 3. DIRECT FLIGHTS ─── -->
+  <div class="section" id="direct-flights">
+    <div class="section-label">3 · Direct flight bookings — Service quality &amp; cost</div>
+    <div class="metric-card">
+      <div class="metric-card-header">
+        <div>
+          <div class="metric-tag tag-green">Service quality</div>
+          <div class="metric-name">Direct flight rate + monthly volume (GC)</div>
+          <div class="metric-stream">Direct flights = faster delivery, fewer handoffs, lower ground handling costs. GC prioritises direct routing — ES shows all flights regardless of capacity.</div>
+        </div>
+        <div class="metric-current">
+          <div class="metric-current-val green" id="df-rate">–</div>
+          <div class="metric-current-lbl">GC direct rate</div>
+        </div>
+      </div>
+      <div class="outcome-row">
+        <div class="outcome-label">Outcome</div>
+        <div class="outcome-text">GC's dynamic route generation surfaces direct options more consistently than ES, resulting in a higher proportion of direct bookings and reducing unnecessary transit routing — saving operational cost for Teleport.</div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-legend">
+          <span class="cleg"><span class="cleg-dot" style="background:var(--gc-line)"></span>Direct bookings (count)</span>
+          <span class="cleg"><span class="cleg-dot" style="background:#85B7EB"></span>Direct rate %</span>
+        </div>
+        <div class="cw" style="height:210px"><canvas id="directTrendChart"></canvas></div>
+        <div class="chart-insight" id="df-insight">–</div>
+      </div>
+      <div class="chart-area" style="border-top:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:500;color:var(--ink-3);margin-bottom:8px">Direct rate comparison — GC vs ES</div>
+        <div class="chart-legend">
+          <span class="cleg"><span class="cleg-dot" style="background:var(--gc-line)"></span>GC <span id="df-gc-pct" style="font-family:'DM Mono',monospace;margin-left:4px">–</span></span>
+          <span class="cleg"><span class="cleg-dot" style="background:var(--es-line)"></span>ES <span id="df-es-pct" style="font-family:'DM Mono',monospace;margin-left:4px">–</span></span>
+        </div>
+        <div class="cw" style="height:130px"><canvas id="directChart"></canvas></div>
+      </div>
+      <div class="levers-section">
+        <div class="levers-title">Levers driving the metric</div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-01</span><span class="lever-title">Route ordering: Hard Block → Soft Block → Direct → Transit</span></div>
+          <div class="lever-body">GC prioritises routes in a defined order. Agents see direct options first — reducing transit fallback driven by habit or poor visibility.</div>
+          <span class="lever-impact impact-green">↑ Direct rate</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-02</span><span class="lever-title">Real-time capacity check</span></div>
+          <div class="lever-body">GC only shows routes with confirmed available capacity. ES surfaces all routes including those without space, leading agents to transit fallbacks when direct shows as "full".</div>
+          <span class="lever-impact impact-green">↑ Direct rate</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-03</span><span class="lever-title">Handler cut-off enforcement</span></div>
+          <div class="lever-body">GC filters routes where handler cut-offs have passed, removing false direct options and surfacing only bookable ones — preventing missed connection failures.</div>
+          <span class="lever-impact impact-blue">↑ Reliability</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-04</span><span class="lever-title">SSIM/ASM/SSM schedule integration</span></div>
+          <div class="lever-body">Live schedule updates ensure agents see current flight options. Stale schedules in ES may suppress valid direct routes that now exist.</div>
+          <span class="lever-impact impact-blue">↑ Coverage</span>
+        </div>
+      </div>
+      <div class="wi-row">
+        <div class="wi-cell">
+          <div class="wi-title green">✓ &nbsp;What went well</div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Direct rate on GC (70.7%) consistently higher than ES (68.5%) and improving month-on-month</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Direct rate improved from 59.9% (Dec) to 72.4% (May) — route engine maturing</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>~1,700 transit legs eliminated across 67,964 GC bookings vs ES (legs/AWB: 1.354 vs 1.379)</span></div>
+        </div>
+        <div class="wi-cell">
+          <div class="wi-title amber">→ &nbsp;How to improve</div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>29.3% of GC bookings still transit — understand if agents choose transit by preference or because direct isn't surfaced</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Dec 2025 direct rate was 59.9% — audit whether early anomaly was data/schedule or route engine gap</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Track split booking acceptance rate — are accepted splits actually faster than transit alternatives?</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 4. ROUTE DURATION ─── -->
+  <div class="section" id="route-duration">
+    <div class="section-label">4 · Route duration — Delivery speed</div>
+    <div class="metric-card">
+      <div class="metric-card-header">
+        <div>
+          <div class="metric-tag tag-green">Delivery speed</div>
+          <div class="metric-name">Average route duration — GC vs ES (monthly)</div>
+          <div class="metric-stream">Shorter duration = faster delivery, less dwell risk, better customer satisfaction. Critical for Guaranteed, LTF, Next Day, and eCommerce products.</div>
+        </div>
+        <div class="metric-current">
+          <div class="metric-current-val green" id="rd-dur">–</div>
+          <div class="metric-current-lbl">GC avg (mins)</div>
+        </div>
+      </div>
+      <div class="outcome-row">
+        <div class="outcome-label">Outcome</div>
+        <div class="outcome-text">GC-routed shipments arrive faster on average than ES-routed ones, and the gap is widening over time — demonstrating that GC's routing intelligence compounds as the platform matures.</div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-legend">
+          <span class="cleg"><span class="cleg-dot" style="background:var(--gc-line)"></span>GC avg duration</span>
+          <span class="cleg"><span class="cleg-dot" style="background:var(--es-line)"></span>ES avg duration</span>
+        </div>
+        <div class="cw" style="height:220px"><canvas id="trendChart"></canvas></div>
+        <div class="chart-insight" id="rd-insight">–</div>
+      </div>
+      <table class="mini-table" style="margin:0;border-top:1px solid var(--border)">
+        <thead><tr><th>Month</th><th>GC avg (min)</th><th>ES avg (min)</th><th>GC advantage</th></tr></thead>
+        <tbody id="durationTable"></tbody>
+      </table>
+      <div class="levers-section">
+        <div class="levers-title">Levers driving the metric</div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-01</span><span class="lever-title">Route ordering (fastest first)</span></div>
+          <div class="lever-body">Hard Block → Soft Block → Direct → Transit ensures the fastest commercially committed route surfaces first.</div>
+          <span class="lever-impact impact-green">↓ Duration</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-02</span><span class="lever-title">Multimodal routing — truck + flight</span></div>
+          <div class="lever-body">For routes where a truck and flight combination is available, GC surfaces it — reducing total journey time vs a connecting flight with long transit dwell.</div>
+          <span class="lever-impact impact-green">↓ Duration</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-03</span><span class="lever-title">Handler cut-off enforcement</span></div>
+          <div class="lever-body">Prevents bookings on flights cargo cannot physically make — avoiding missed connections that add hours or days to delivery.</div>
+          <span class="lever-impact impact-blue">↑ Reliability</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-04</span><span class="lever-title">Interline route automation</span></div>
+          <div class="lever-body">Partner airline routes surface in the same pool as direct flights — expanding faster options without manual coordination.</div>
+          <span class="lever-impact impact-green">↓ Duration</span>
+        </div>
+      </div>
+      <div class="wi-row">
+        <div class="wi-cell">
+          <div class="wi-title green">✓ &nbsp;What went well</div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>GC improved 39% — from 1,138 min (Dec) to 688 min (May)</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>63-minute average saving across 55,689 accepted GC bookings</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>GC improving while ES worsens — the divergence is the most compelling story in the data</span></div>
+        </div>
+        <div class="wi-cell">
+          <div class="wi-title amber">→ &nbsp;How to improve</div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Dec 2025 GC duration (1,138 min) was worse than ES (686 min) — investigate root cause to prevent regression on new route onboarding</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Filter duration by product type — Guaranteed and Next Day should be materially shorter than Basic Uplift</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Measure dwell time at transit stations for the 29.3% transit bookings — biggest headroom for improvement</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 5. BLOCK UTILISATION ─── -->
+  <div class="section" id="block-util">
+    <div class="section-label">5 · Block utilisation — Margin recovery</div>
+    <div class="metric-card">
+      <div class="metric-card-header">
+        <div>
+          <div class="metric-tag tag-green">Margin recovery</div>
+          <div class="metric-name">GC block bookings — monthly growth</div>
+          <div class="metric-stream">Block space is pre-committed cost. Unfilled block = margin leakage. ES has zero block visibility — every GC block booking is revenue that was invisible on ES.</div>
+        </div>
+        <div class="metric-current">
+          <div class="metric-current-val green" id="bl-total">–</div>
+          <div class="metric-current-lbl">Total block bookings</div>
+        </div>
+      </div>
+      <div class="outcome-row">
+        <div class="outcome-label">Outcome</div>
+        <div class="outcome-text">GC consistently fills block space — growing 8.8× from Dec 2025 to May 2026. Making block inventory visible to agents at booking time directly drives utilisation. ES block bookings: 0.</div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-legend">
+          <span class="cleg"><span class="cleg-dot" style="background:#0c447c"></span>Hard block</span>
+          <span class="cleg"><span class="cleg-dot" style="background:#85B7EB"></span>Soft block</span>
+        </div>
+        <div class="cw" style="height:200px"><canvas id="blockChart"></canvas></div>
+        <div class="chart-insight" id="bl-insight">–</div>
+      </div>
+      <div class="levers-section">
+        <div class="levers-title">Levers driving the metric</div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-01</span><span class="lever-title">Block visibility at top of route list</span></div>
+          <div class="lever-body">GC shows Hard Block and Soft Block first. Agents default to the first good option — making block the default choice drives utilisation without mandating it.</div>
+          <span class="lever-impact impact-green">↑ Utilisation</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-02</span><span class="lever-title">Block profile management</span></div>
+          <div class="lever-body">Commercial teams set overbooking thresholds, auto-confirmation %, and ULD configs per route. Tighter configuration converts more bookings to block automatically.</div>
+          <span class="lever-impact impact-green">↑ Revenue</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-03</span><span class="lever-title">Real-time capacity console</span></div>
+          <div class="lever-body">Load planners see block status live and can open/close block dynamically — preventing waste from blocks closed too early or kept open beyond demand.</div>
+          <span class="lever-impact impact-blue">↑ Precision</span>
+        </div>
+      </div>
+      <div class="wi-row">
+        <div class="wi-cell">
+          <div class="wi-title green">✓ &nbsp;What went well</div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>8.8× growth (243 → 2,144) with no specific block campaign — organic, driven by visibility alone</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Hard and soft block growing at equal rates — agents committing to hard block, not just soft</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Acceleration in Apr–May 2026 as GC agent base crossed 50% share</span></div>
+        </div>
+        <div class="wi-cell">
+          <div class="wi-title amber">→ &nbsp;How to improve</div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Block utilisation rate is unknown — add total block capacity data to measure booked ÷ available</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Track soft block → confirmed conversion rate — high drop rates indicate placeholder behaviour</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Identify routes with lowest block fill rates — pricing or availability adjustments needed</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 6. BOOKING HEALTH ─── -->
+  <div class="section" id="booking-health">
+    <div class="section-label">6 · Booking health — Revenue capture</div>
+    <div class="metric-card">
+      <div class="metric-card-header">
+        <div>
+          <div class="metric-tag tag-green">Revenue capture</div>
+          <div class="metric-name">Acceptance rate &amp; waitlist — GC vs ES</div>
+          <div class="metric-stream">Accepted bookings generate revenue. Waitlisted bookings are demand Teleport cannot immediately fulfil — converted later or lost.</div>
+        </div>
+        <div class="metric-current">
+          <div class="metric-current-val green" id="bh-acc">–</div>
+          <div class="metric-current-lbl">GC acceptance rate</div>
+        </div>
+      </div>
+      <div class="outcome-row">
+        <div class="outcome-label">Outcome</div>
+        <div class="outcome-text">GC maintains comparable acceptance rate to ES while handling a growing, more complex booking mix. The waitlist rate, while higher, reflects genuine demand capture — not system rejection.</div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-legend">
+          <span class="cleg"><span class="cleg-dot" style="background:var(--gc-line)"></span>GC</span>
+          <span class="cleg"><span class="cleg-dot" style="background:var(--es-line)"></span>ES</span>
+        </div>
+        <div class="cw" style="height:200px"><canvas id="healthChart"></canvas></div>
+      </div>
+      <table class="mini-table" style="margin:0;border-top:1px solid var(--border)">
+        <thead><tr><th>Metric</th><th>GC</th><th>ES</th><th>Gap</th></tr></thead>
+        <tbody>
+          <tr><td class="td-label">Acceptance rate</td><td class="pos-val" id="bh-gc-acc">–</td><td id="bh-es-acc">–</td><td id="bh-acc-gap">–</td></tr>
+          <tr><td class="td-label">Waitlist rate</td><td id="bh-gc-wl">–</td><td id="bh-es-wl">–</td><td id="bh-wl-gap">–</td></tr>
+          <tr><td class="td-label">Avg legs / AWB</td><td class="pos-val" id="bh-gc-legs">–</td><td id="bh-es-legs">–</td><td id="bh-legs-gap">–</td></tr>
+        </tbody>
+      </table>
+      <div class="levers-section">
+        <div class="levers-title">Levers driving the metric</div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-01</span><span class="lever-title">Capacity auto-confirmation thresholds</span></div>
+          <div class="lever-body">Bookings within the auto-confirmation % are accepted instantly without queue review. Tuning per route reduces unnecessary waitlisting on high-confidence bookings.</div>
+          <span class="lever-impact impact-green">↑ Acceptance</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-02</span><span class="lever-title">Overbooking controls</span></div>
+          <div class="lever-body">GC's overbooking settings allow controlled capacity expansion on high-demand routes — converting some waitlist to accepted without over-committing.</div>
+          <span class="lever-impact impact-amber">⚖ Balance</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-03</span><span class="lever-title">Booking queue SLA management</span></div>
+          <div class="lever-body">Colour-coded SLA timers ensure waitlisted bookings are reviewed before they expire — preventing demand leakage from slow queue clearance.</div>
+          <span class="lever-impact impact-blue">↓ Leakage</span>
+        </div>
+      </div>
+      <div class="wi-row">
+        <div class="wi-cell">
+          <div class="wi-title green">✓ &nbsp;What went well</div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Acceptance rate parity (GC 81.9% vs ES 82.4%) despite broader, more complex route mix</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Waitlist rate declining month-on-month: 1.5% (Dec) → 1.0% (May) as capacity calibration improves</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>GC avg legs/AWB (1.354) lower than ES (1.379) — more efficient routing per booking</span></div>
+        </div>
+        <div class="wi-cell">
+          <div class="wi-title amber">→ &nbsp;How to improve</div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Track waitlist-to-acceptance conversion — is the waitlist a useful queue or a dead end?</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Identify routes with disproportionate waitlist rates for targeted capacity reallocation</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Understand cancellation concentration (12.97% GC vs 11.27% ES) by product and route</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 7. AGENT BASE ─── -->
+  <div class="section" id="agent-base">
+    <div class="section-label">7 · Agent base — Revenue ceiling</div>
+    <div class="metric-card">
+      <div class="metric-card-header">
+        <div>
+          <div class="metric-tag tag-blue">Revenue ceiling</div>
+          <div class="metric-name">Unique agents — GC vs ES</div>
+          <div class="metric-stream">Agent count defines the ceiling of GC booking volume. An agent not on GC is commercial activity invisible to the GC ecosystem.</div>
+        </div>
+        <div class="metric-current">
+          <div class="metric-current-val green" id="ab-gc">–</div>
+          <div class="metric-current-lbl">GC unique agents</div>
+        </div>
+      </div>
+      <div class="outcome-row">
+        <div class="outcome-label">Outcome</div>
+        <div class="outcome-text">GC's agent base exceeds ES, and agents on GC make better routing decisions — demonstrated by higher direct rate and lower avg legs per AWB.</div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-legend">
+          <span class="cleg"><span class="cleg-dot" style="background:var(--gc-line)"></span>GC</span>
+          <span class="cleg"><span class="cleg-dot" style="background:var(--es-line)"></span>ES</span>
+        </div>
+        <div class="cw" style="height:160px"><canvas id="agentChart"></canvas></div>
+      </div>
+      <table class="mini-table" style="margin:0;border-top:1px solid var(--border)">
+        <thead><tr><th>Metric</th><th>GC</th><th>ES</th></tr></thead>
+        <tbody>
+          <tr><td class="td-label">Unique agents</td><td class="pos-val" id="ab-gc-agents">–</td><td id="ab-es-agents">–</td></tr>
+          <tr><td class="td-label">Total bookings</td><td class="pos-val" id="ab-gc-vol">–</td><td id="ab-es-vol">–</td></tr>
+          <tr><td class="td-label">Bookings / agent</td><td id="ab-gc-bpa">–</td><td id="ab-es-bpa">–</td></tr>
+          <tr><td class="td-label">Direct booking rate</td><td class="pos-val" id="ab-gc-dir">–</td><td id="ab-es-dir">–</td></tr>
+        </tbody>
+      </table>
+      <div class="levers-section">
+        <div class="levers-title">Levers driving the metric</div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-01</span><span class="lever-title">Onboarding process speed</span></div>
+          <div class="lever-body">Time from sign-up to first booking is the key conversion metric. Every day of friction in onboarding delays productive volume.</div>
+          <span class="lever-impact impact-green">↑ Agent volume</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-02</span><span class="lever-title">Training and feature enablement</span></div>
+          <div class="lever-body">Agents who understand block, interline, and split booking book more and book better. Feature adoption drives per-agent productivity.</div>
+          <span class="lever-impact impact-green">↑ Productivity</span>
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-id">L-03</span><span class="lever-title">Feedback loops and issue resolution</span></div>
+          <div class="lever-body">Agents who hit friction early in their GC journey are most likely to revert to ES. Fast resolution of reported issues retains the active agent base.</div>
+          <span class="lever-impact impact-amber">↓ Churn</span>
+        </div>
+      </div>
+      <div class="wi-row">
+        <div class="wi-cell">
+          <div class="wi-title green">✓ &nbsp;What went well</div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>GC agent base (802) already exceeds ES (763) — the footprint has tipped</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Agents chose to migrate — they were not forced. Organic adoption is a quality signal</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>GC agents have higher direct rate (70.7% vs 68.5%) — better decisions from day one</span></div>
+        </div>
+        <div class="wi-cell">
+          <div class="wi-title amber">→ &nbsp;How to improve</div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Bookings/agent gap — GC agents booking less per head than ES. Target top 100 ES agents who haven't migrated</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Agent cohort analysis — early migrators (Dec–Jan) vs late (Apr–May) likely need different support models</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Track agents inactive 30+ days — activation programme before they fully revert to ES</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
 </div>
 
 <script>
 var CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQStFz3gtB_V1DK0SKu3xDL6LUBcxlRIYaEsdG_iMyhvBi-E9UdfCsBs2UgT5tDm1XUUlv4Z7m_vSxA/pub?gid=132043287&single=true&output=csv';
-var GCC='#1D9E75',ESC='#D85A30',GCL='rgba(29,158,117,0.12)',ESL='rgba(216,90,48,0.12)';
+var GCL='#1D9E75',ESL='#D85A30',GCB='rgba(29,158,117,0.12)',ESB='rgba(216,90,48,0.12)';
 var charts={},rawRows=[],state={};
 var fFrom='',fTo='',fSource='all',fProduct='all',fStatus='all';
-var DATA_MIN='2025-12-01',DATA_MAX='2026-06-04';
 
 function r1(v){return Math.round(v*10)/10;}
 function r0(v){return Math.round(v);}
-function kFmt(v){return v>=1000?(Math.round(v/100)/10)+'k':v;}
+function kf(v){return v>=1000?(Math.round(v/100)/10)+'k':String(v);}
 function pct(v){return v+'%';}
-function minFmt(v){return v+' min';}
-function toISO(d){if(!d) return '';var p=d.split('-');return p[0]+'-'+p[1]+'-'+p[2];}
-function fmtDateDisplay(iso){if(!iso) return '';var p=iso.split('-');var mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mn[parseInt(p[1])-1]+' '+parseInt(p[2])+', '+p[0];}
+function mf(v){return v+' min';}
+function monthKey(s){var d=new Date(s);if(isNaN(d))return null;return d.getFullYear()+'-'+(d.getMonth()<9?'0':'')+(d.getMonth()+1);}
+function monthLabel(mk){var p=mk.split('-');var mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mn[parseInt(p[1])-1]+' '+p[0].slice(2);}
 
-function monthKey(s){
-  var d=new Date(s);if(isNaN(d)) return null;
-  return d.getFullYear()+'-'+(d.getMonth()<9?'0':'')+(d.getMonth()+1);
-}
-function monthLabel(mk){
-  var p=mk.split('-');
-  var mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return mn[parseInt(p[1])-1]+' '+p[0].slice(2);
-}
-function rowDate(r){
-  var s=(r['Created At']||'').toString().trim();
-  return s?new Date(s):null;
-}
-
-// ── Filtering ─────────────────────────────────────────────────────────────
-function getFilteredRows(){
+function getFiltered(){
   var from=fFrom?new Date(fFrom):null;
   var to=fTo?new Date(fTo+' 23:59:59'):null;
   return rawRows.filter(function(r){
@@ -334,12 +796,7 @@ function getFilteredRows(){
     if(fSource==='ES'&&src!=='ES Booking') return false;
     if(fProduct!=='all'&&(r['Product Type']||'').trim()!==fProduct) return false;
     if(fStatus!=='all'&&(r['Booking Status']||'').trim()!==fStatus) return false;
-    if(from||to){
-      var d=rowDate(r);
-      if(!d) return false;
-      if(from&&d<from) return false;
-      if(to&&d>to) return false;
-    }
+    if(from||to){var d=new Date(r['Created At']||'');if(isNaN(d))return false;if(from&&d<from)return false;if(to&&d>to)return false;}
     return true;
   });
 }
@@ -350,267 +807,302 @@ function applyFilters(){
   fSource=document.getElementById('f-source').value;
   fProduct=document.getElementById('f-product').value;
   fStatus=document.getElementById('f-status').value;
-
-  // Highlight active
-  ['f-source','f-product','f-status'].forEach(function(id){
-    var el=document.getElementById(id);
-    el.classList.toggle('active',el.value!=='all');
-  });
-  document.getElementById('f-from').classList.toggle('active',!!fFrom);
-  document.getElementById('f-to').classList.toggle('active',!!fTo);
-
-  // Tags
-  var tags=[];
-  if(fFrom) tags.push('From: '+fmtDateDisplay(fFrom));
-  if(fTo) tags.push('To: '+fmtDateDisplay(fTo));
-  if(fSource!=='all') tags.push(fSource==='GC'?'GC only':'ES only');
-  if(fProduct!=='all') tags.push(fProduct);
-  if(fStatus!=='all') tags.push(fStatus);
-  var bar=document.getElementById('activeBar');
-  var tagsEl=document.getElementById('activeTags');
-  if(tags.length){
-    bar.classList.add('visible');
-    tagsEl.innerHTML=tags.map(function(t){return '<span class="filter-tag">'+t+'</span>';}).join('');
-  } else {
-    bar.classList.remove('visible');
-  }
-
-  compute(getFilteredRows());
+  var count=[fFrom,fTo,fSource!=='all'?fSource:'',fProduct!=='all'?fProduct:'',fStatus!=='all'?fStatus:''].filter(Boolean).length;
+  var fc=document.getElementById('fc');
+  fc.style.display=count?'inline-block':'none';
+  fc.textContent=count;
+  ['f-from','f-to'].forEach(function(id){document.getElementById(id).classList.toggle('active',!!document.getElementById(id).value);});
+  ['f-source','f-product','f-status'].forEach(function(id){document.getElementById(id).classList.toggle('active',document.getElementById(id).value!=='all');});
+  compute(getFiltered());
   buildCharts();
-  updateAll();
+  updateDOM();
 }
 
 function resetFilters(){
-  document.getElementById('f-from').value='';
-  document.getElementById('f-to').value='';
-  document.getElementById('f-source').value='all';
-  document.getElementById('f-product').value='all';
-  document.getElementById('f-status').value='all';
+  ['f-from','f-to'].forEach(function(id){document.getElementById(id).value='';document.getElementById(id).classList.remove('active');});
+  ['f-source','f-product','f-status'].forEach(function(id){document.getElementById(id).value='all';document.getElementById(id).classList.remove('active');});
   fFrom='';fTo='';fSource='all';fProduct='all';fStatus='all';
-  ['f-from','f-to','f-source','f-product','f-status'].forEach(function(id){
-    document.getElementById(id).classList.remove('active');
-  });
-  document.getElementById('activeBar').classList.remove('visible');
-  compute(getFilteredRows());
-  buildCharts();
-  updateAll();
+  document.getElementById('fc').style.display='none';
+  compute(getFiltered()); buildCharts(); updateDOM();
 }
 
-// ── Compute ───────────────────────────────────────────────────────────────
 function compute(rows){
-  var monthSet=[],gcByM={},esByM={};
-  var gcAcc={},esAcc={},gcWait={},esWait={};
-  var gcLegs={},esLegs={};
-  var gcDur={},esDur={},gcDurC={},esDurC={};
-  var gcDir={},gcTot={},esDir={};
-  var gcBlock={hard:{},soft:{}};
-  var gcProd={},esProd={};
+  var ms=[],gcM={},esM={};
+  var gcAcc={},esAcc={},gcWl={},esWl={};
+  var gcLg={},esLg={};
+  var gcDr={},esDr={},gcDrC={},esDrC={};
+  var gcDi={},gcTt={},esDi={};
+  var hB={},sB={};
+  var gcPr={},esPr={};
   var gcAg=new Set(),esAg=new Set();
 
   rows.forEach(function(r){
     var src=(r['Source']||'').trim();
     var isGC=src==='Teleport Core',isES=src==='ES Booking';
-    var mk=monthKey(r['Created At']); if(!mk) return;
-    if(monthSet.indexOf(mk)<0) monthSet.push(mk);
+    var mk=monthKey(r['Created At']);if(!mk)return;
+    if(ms.indexOf(mk)<0)ms.push(mk);
     var st=(r['Booking Status']||'').trim();
     var legs=parseInt(r['Legs'])||0;
     var dur=parseFloat(r['Route Details Route Duration (mins)'])||0;
     var prod=(r['Product Type']||'').trim();
     var blk=(r['Block Type']||'').trim();
     var ag=(r['Agent Code']||'').trim();
-
     if(isGC){
-      gcByM[mk]=(gcByM[mk]||0)+1;
-      if(st==='Accepted') gcAcc[mk]=(gcAcc[mk]||0)+1;
-      if(st==='Waitlist') gcWait[mk]=(gcWait[mk]||0)+1;
-      gcLegs[mk]=(gcLegs[mk]||0)+legs;
-      if(dur>0&&st==='Accepted'){gcDur[mk]=(gcDur[mk]||0)+dur;gcDurC[mk]=(gcDurC[mk]||0)+1;}
-      if(legs===1) gcDir[mk]=(gcDir[mk]||0)+1;
-      gcTot[mk]=(gcTot[mk]||0)+1;
-      if(blk==='HardBlock') gcBlock.hard[mk]=(gcBlock.hard[mk]||0)+1;
-      if(blk==='SoftBlock') gcBlock.soft[mk]=(gcBlock.soft[mk]||0)+1;
-      gcProd[prod]=(gcProd[prod]||0)+1;
-      if(ag) gcAg.add(ag);
+      gcM[mk]=(gcM[mk]||0)+1;
+      if(st==='Accepted')gcAcc[mk]=(gcAcc[mk]||0)+1;
+      if(st==='Waitlist')gcWl[mk]=(gcWl[mk]||0)+1;
+      gcLg[mk]=(gcLg[mk]||0)+legs;
+      if(dur>0&&st==='Accepted'){gcDr[mk]=(gcDr[mk]||0)+dur;gcDrC[mk]=(gcDrC[mk]||0)+1;}
+      if(legs===1)gcDi[mk]=(gcDi[mk]||0)+1;
+      gcTt[mk]=(gcTt[mk]||0)+1;
+      if(blk==='HardBlock')hB[mk]=(hB[mk]||0)+1;
+      if(blk==='SoftBlock')sB[mk]=(sB[mk]||0)+1;
+      gcPr[prod]=(gcPr[prod]||0)+1;
+      if(ag)gcAg.add(ag);
     }
     if(isES){
-      esByM[mk]=(esByM[mk]||0)+1;
-      if(st==='Accepted') esAcc[mk]=(esAcc[mk]||0)+1;
-      if(st==='Waitlist') esWait[mk]=(esWait[mk]||0)+1;
-      esLegs[mk]=(esLegs[mk]||0)+legs;
-      if(dur>0&&st==='Accepted'){esDur[mk]=(esDur[mk]||0)+dur;esDurC[mk]=(esDurC[mk]||0)+1;}
-      if(legs===1) esDir[mk]=(esDir[mk]||0)+1;
-      esProd[prod]=(esProd[prod]||0)+1;
-      if(ag) esAg.add(ag);
+      esM[mk]=(esM[mk]||0)+1;
+      if(st==='Accepted')esAcc[mk]=(esAcc[mk]||0)+1;
+      if(st==='Waitlist')esWl[mk]=(esWl[mk]||0)+1;
+      esLg[mk]=(esLg[mk]||0)+legs;
+      if(dur>0&&st==='Accepted'){esDr[mk]=(esDr[mk]||0)+dur;esDrC[mk]=(esDrC[mk]||0)+1;}
+      if(legs===1)esDi[mk]=(esDi[mk]||0)+1;
+      esPr[prod]=(esPr[prod]||0)+1;
+      if(ag)esAg.add(ag);
     }
   });
-
-  monthSet.sort();
-  var labels=monthSet.map(monthLabel);
-  var gcVol=monthSet.map(function(m){return gcByM[m]||0;});
-  var esVol=monthSet.map(function(m){return esByM[m]||0;});
-  var share=monthSet.map(function(m,i){var t=(gcVol[i]||0)+(esVol[i]||0);return t?r1((gcVol[i]||0)/t*100):0;});
-  var gcAccR=monthSet.map(function(m){return r1((gcAcc[m]||0)/(gcByM[m]||1)*100);});
-  var esAccR=monthSet.map(function(m){return r1((esAcc[m]||0)/(esByM[m]||1)*100);});
-  var gcWaitR=monthSet.map(function(m){return r1((gcWait[m]||0)/(gcByM[m]||1)*100);});
-  var esWaitR=monthSet.map(function(m){return r1((esWait[m]||0)/(esByM[m]||1)*100);});
-  var gcLA=monthSet.map(function(m){return r1((gcLegs[m]||0)/(gcByM[m]||1));});
-  var esLA=monthSet.map(function(m){return r1((esLegs[m]||0)/(esByM[m]||1));});
-  var gcDA=monthSet.map(function(m){return gcDurC[m]?r0((gcDur[m]||0)/gcDurC[m]):0;});
-  var esDA=monthSet.map(function(m){return esDurC[m]?r0((esDur[m]||0)/esDurC[m]):0;});
-  var gcDC=monthSet.map(function(m){return gcDir[m]||0;});
-  var gcDP=monthSet.map(function(m){return gcTot[m]?r1((gcDir[m]||0)/gcTot[m]*100):0;});
-  var hardB=monthSet.map(function(m){return gcBlock.hard[m]||0;});
-  var softB=monthSet.map(function(m){return gcBlock.soft[m]||0;});
-
-  var tGC=gcVol.reduce(function(a,b){return a+b;},0);
-  var tES=esVol.reduce(function(a,b){return a+b;},0);
-  var sGD=Object.values(gcDur).reduce(function(a,b){return a+b;},0);
-  var sGDC=Object.values(gcDurC).reduce(function(a,b){return a+b;},0);
-  var sED=Object.values(esDur).reduce(function(a,b){return a+b;},0);
-  var sEDC=Object.values(esDurC).reduce(function(a,b){return a+b;},0);
-  var gcDAll=sGDC?r0(sGD/sGDC):0, esDAll=sEDC?r0(sED/sEDC):0;
-  var gcDirAll=Object.values(gcDir).reduce(function(a,b){return a+b;},0);
-  var esDirAll=Object.values(esDir).reduce(function(a,b){return a+b;},0);
-  var gcDPAll=r1(gcDirAll/Math.max(tGC,1)*100);
-  var esDPAll=r1(esDirAll/Math.max(tES,1)*100);
-  var gcLAll=r1(Object.values(gcLegs).reduce(function(a,b){return a+b;},0)/Math.max(tGC,1));
-  var esLAll=r1(Object.values(esLegs).reduce(function(a,b){return a+b;},0)/Math.max(tES,1));
-  var gcWAll=r1(Object.values(gcWait).reduce(function(a,b){return a+b;},0)/Math.max(tGC,1)*100);
-  var esWAll=r1(Object.values(esWait).reduce(function(a,b){return a+b;},0)/Math.max(tES,1)*100);
+  ms.sort();
+  var lbs=ms.map(monthLabel);
+  var gcV=ms.map(function(m){return gcM[m]||0;});
+  var esV=ms.map(function(m){return esM[m]||0;});
+  var sh=ms.map(function(m,i){var t=(gcV[i]||0)+(esV[i]||0);return t?r1((gcV[i]||0)/t*100):0;});
+  var gcDA=ms.map(function(m){return gcDrC[m]?r0((gcDr[m]||0)/gcDrC[m]):0;});
+  var esDA=ms.map(function(m){return esDrC[m]?r0((esDr[m]||0)/esDrC[m]):0;});
+  var gcDC=ms.map(function(m){return gcDi[m]||0;});
+  var gcDP=ms.map(function(m){return gcTt[m]?r1((gcDi[m]||0)/gcTt[m]*100):0;});
+  var hBa=ms.map(function(m){return hB[m]||0;});
+  var sBa=ms.map(function(m){return sB[m]||0;});
+  var tGC=gcV.reduce(function(a,b){return a+b;},0);
+  var tES=esV.reduce(function(a,b){return a+b;},0);
+  var sGDr=Object.values(gcDr).reduce(function(a,b){return a+b;},0);
+  var sGDrC=Object.values(gcDrC).reduce(function(a,b){return a+b;},0);
+  var sEDr=Object.values(esDr).reduce(function(a,b){return a+b;},0);
+  var sEDrC=Object.values(esDrC).reduce(function(a,b){return a+b;},0);
+  var gcDAll=sGDrC?r0(sGDr/sGDrC):0,esDAll=sEDrC?r0(sEDr/sEDrC):0;
+  var gcDiAll=Object.values(gcDi).reduce(function(a,b){return a+b;},0);
+  var esDiAll=Object.values(esDi).reduce(function(a,b){return a+b;},0);
+  var gcDPAll=r1(gcDiAll/Math.max(tGC,1)*100);
+  var esDPAll=r1(esDiAll/Math.max(tES,1)*100);
+  var gcLgAll=r1(Object.values(gcLg).reduce(function(a,b){return a+b;},0)/Math.max(tGC,1));
+  var esLgAll=r1(Object.values(esLg).reduce(function(a,b){return a+b;},0)/Math.max(tES,1));
+  var gcWlAll=r1(Object.values(gcWl).reduce(function(a,b){return a+b;},0)/Math.max(tGC,1)*100);
+  var esWlAll=r1(Object.values(esWl).reduce(function(a,b){return a+b;},0)/Math.max(tES,1)*100);
   var gcAcAll=r1(Object.values(gcAcc).reduce(function(a,b){return a+b;},0)/Math.max(tGC,1)*100);
   var esAcAll=r1(Object.values(esAcc).reduce(function(a,b){return a+b;},0)/Math.max(tES,1)*100);
-  var gcTG=gcProd['TG Contract']||0, esTG=esProd['TG Contract']||0;
-  var gcPC=(gcProd['TG Contract']||0)+(gcProd['Teleport Guaranteed']||0)+(gcProd['LTF/ FLOWERS']||0);
-  var esPC=(esProd['TG Contract']||0)+(esProd['Teleport Guaranteed']||0)+(esProd['LTF/ FLOWERS']||0);
-  var gcPP=r1(gcPC/Math.max(tGC,1)*100), esPP=r1(esPC/Math.max(tES,1)*100);
   var pKeys=['Basic Uplift','TG Contract','Teleport Guaranteed','Teleport eCommerce','GENERAL','LTF/ FLOWERS','FLEXI','Next Day'];
-  var pLbls=['Basic Uplift','TG Contract','TP Guaranteed','TP eCommerce','General','LTF/Flowers','Flexi','Next Day'];
-  var gcPA=pKeys.map(function(k){return gcProd[k]||0;});
-  var esPA=pKeys.map(function(k){return esProd[k]||0;});
-
-  state={
-    labels:labels,monthSet:monthSet,
-    gcVol:gcVol,esVol:esVol,share:share,
-    gcAccR:gcAccR,esAccR:esAccR,gcWaitR:gcWaitR,esWaitR:esWaitR,
-    gcLA:gcLA,esLA:esLA,gcDA:gcDA,esDA:esDA,
-    gcDC:gcDC,gcDP:gcDP,hardB:hardB,softB:softB,
-    pLbls:pLbls,gcPA:gcPA,esPA:esPA,
-    tGC:tGC,tES:tES,
-    gcDAll:gcDAll,esDAll:esDAll,
-    gcDPAll:gcDPAll,esDPAll:esDPAll,
-    gcLAll:gcLAll,esLAll:esLAll,
-    gcWAll:gcWAll,esWAll:esWAll,
-    gcAcAll:gcAcAll,esAcAll:esAcAll,
-    gcTG:gcTG,esTG:esTG,gcPP:gcPP,esPP:esPP,
-    gcAg:gcAg.size,esAg:esAg.size,
-    gcDirAll:gcDirAll,gcTrAll:tGC-gcDirAll
-  };
+  var pLbs=['Basic Uplift','TG Contract','TP Guaranteed','TP eCommerce','General','LTF/Flowers','Flexi','Next Day'];
+  var gcPA=pKeys.map(function(k){return gcPr[k]||0;});
+  var esPA=pKeys.map(function(k){return esPr[k]||0;});
+  var gcPremC=(gcPr['TG Contract']||0)+(gcPr['Teleport Guaranteed']||0)+(gcPr['LTF/ FLOWERS']||0);
+  var gcPremP=r1(gcPremC/Math.max(tGC,1)*100);
+  var esPremC=(esPr['TG Contract']||0)+(esPr['Teleport Guaranteed']||0)+(esPr['LTF/ FLOWERS']||0);
+  var esPremP=r1(esPremC/Math.max(tES,1)*100);
+  var tHard=hBa.reduce(function(a,b){return a+b;},0);
+  var tSoft=sBa.reduce(function(a,b){return a+b;},0);
+  state={ms:ms,lbs:lbs,gcV:gcV,esV:esV,sh:sh,gcDA:gcDA,esDA:esDA,gcDC:gcDC,gcDP:gcDP,hBa:hBa,sBa:sBa,pLbs:pLbs,gcPA:gcPA,esPA:esPA,
+    tGC:tGC,tES:tES,gcDAll:gcDAll,esDAll:esDAll,gcDPAll:gcDPAll,esDPAll:esDPAll,
+    gcLgAll:gcLgAll,esLgAll:esLgAll,gcWlAll:gcWlAll,esWlAll:esWlAll,gcAcAll:gcAcAll,esAcAll:esAcAll,
+    gcPremP:gcPremP,esPremP:esPremP,gcPr:gcPr,esPr:esPr,gcAg:gcAg.size,esAg:esAg.size,
+    gcDiAll:gcDiAll,tHard:tHard,tSoft:tSoft};
 }
 
-// ── Charts ────────────────────────────────────────────────────────────────
 function buildCharts(){
   var base={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},animation:{duration:300}};
-  function mk(id,cfg){if(charts[id]) charts[id].destroy(); charts[id]=new Chart(document.getElementById(id),cfg);}
+  function mk(id,cfg){if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById(id),cfg);}
 
-  mk('gcGrowthChart',{type:'bar',data:{labels:state.labels,datasets:[
-    {label:'GC',data:state.gcVol,backgroundColor:GCC,borderRadius:5,order:2},
-    {label:'Share',data:state.share,type:'line',yAxisID:'y2',borderColor:'#85B7EB',borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#85B7EB',tension:0.3,order:1,fill:false}
-  ]},options:Object.assign({},base,{scales:{x:{grid:{display:false},ticks:{autoSkip:false}},y:{beginAtZero:true,ticks:{callback:kFmt},grid:{color:'rgba(0,0,0,0.06)'}},y2:{position:'right',min:0,max:100,ticks:{callback:pct},grid:{display:false}}}})});
+  mk('gcGrowthChart',{type:'bar',data:{labels:state.lbs,datasets:[
+    {data:state.gcV,backgroundColor:GCL,borderColor:GCL,borderRadius:4,order:2},
+    {data:state.sh,type:'line',yAxisID:'y2',borderColor:'#85B7EB',borderWidth:2,pointRadius:3,pointBackgroundColor:'#85B7EB',tension:0.3,order:1,fill:false}
+  ]},options:Object.assign({},base,{scales:{x:{grid:{display:false},ticks:{autoSkip:false,font:{size:10}}},y:{beginAtZero:true,ticks:{callback:kf,font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}},y2:{position:'right',min:0,max:100,ticks:{callback:pct,font:{size:10}},grid:{display:false}}}})});
 
-  mk('directTrendChart',{type:'bar',data:{labels:state.labels,datasets:[
-    {label:'Direct',data:state.gcDC,backgroundColor:GCC,borderRadius:5,order:2},
-    {label:'Rate',data:state.gcDP,type:'line',yAxisID:'y2',borderColor:'#85B7EB',borderDash:[4,3],borderWidth:2,pointRadius:4,pointBackgroundColor:'#85B7EB',tension:0.3,order:1,fill:false}
-  ]},options:Object.assign({},base,{scales:{x:{grid:{display:false},ticks:{autoSkip:false}},y:{beginAtZero:true,ticks:{callback:kFmt},grid:{color:'rgba(0,0,0,0.06)'}},y2:{position:'right',min:50,max:85,ticks:{callback:pct},grid:{display:false}}}})});
+  mk('directTrendChart',{type:'bar',data:{labels:state.lbs,datasets:[
+    {data:state.gcDC,backgroundColor:'rgba(29,158,117,0.2)',borderColor:GCL,borderRadius:4,order:2},
+    {data:state.gcDP,type:'line',yAxisID:'y2',borderColor:'#85B7EB',borderDash:[4,3],borderWidth:2,pointRadius:3,pointBackgroundColor:'#85B7EB',tension:0.3,order:1,fill:false}
+  ]},options:Object.assign({},base,{scales:{x:{grid:{display:false},ticks:{autoSkip:false,font:{size:10}}},y:{beginAtZero:true,ticks:{callback:kf,font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}},y2:{position:'right',min:50,max:85,ticks:{callback:pct,font:{size:10}},grid:{display:false}}}})});
 
-  mk('directChart',{type:'bar',data:{labels:['GC','ES'],datasets:[{data:[state.gcDPAll,state.esDPAll],backgroundColor:[GCC,ESC],borderRadius:5,barThickness:46}]},options:Object.assign({},base,{indexAxis:'y',scales:{x:{min:60,max:80,ticks:{callback:pct},grid:{color:'rgba(0,0,0,0.06)'}},y:{grid:{display:false},ticks:{autoSkip:false}}}})});
+  mk('directChart',{type:'bar',data:{labels:['GC','ES'],datasets:[{data:[state.gcDPAll,state.esDPAll],backgroundColor:[GCL,ESB],borderColor:[GCL,'rgba(216,90,48,0.5)'],borderRadius:4,barThickness:44}]},options:Object.assign({},base,{indexAxis:'y',scales:{x:{min:60,max:80,ticks:{callback:pct,font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}},y:{grid:{display:false},ticks:{autoSkip:false,font:{size:11}}}}})});
 
-  mk('durationChart',{type:'bar',data:{labels:['GC','ES'],datasets:[{data:[state.gcDAll,state.esDAll],backgroundColor:[GCC,ESC],borderRadius:5,barThickness:46}]},options:Object.assign({},base,{indexAxis:'y',scales:{x:{min:400,max:1300,ticks:{callback:minFmt},grid:{color:'rgba(0,0,0,0.06)'}},y:{grid:{display:false},ticks:{autoSkip:false}}}})});
+  mk('trendChart',{type:'line',data:{labels:state.lbs,datasets:[
+    {data:state.gcDA,borderColor:GCL,backgroundColor:'rgba(29,158,117,0.08)',fill:true,tension:0.35,pointRadius:3,pointBackgroundColor:GCL,borderWidth:2},
+    {data:state.esDA,borderColor:ESL,backgroundColor:'rgba(216,90,48,0.08)',fill:true,tension:0.35,pointRadius:3,pointBackgroundColor:ESL,borderWidth:2}
+  ]},options:Object.assign({},base,{scales:{x:{grid:{display:false},ticks:{autoSkip:false,font:{size:10}}},y:{ticks:{callback:mf,font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}}})});
 
-  mk('trendChart',{type:'line',data:{labels:state.labels,datasets:[
-    {label:'GC',data:state.gcDA,borderColor:GCC,backgroundColor:GCL,fill:true,tension:0.35,pointRadius:4,pointBackgroundColor:GCC,borderWidth:2},
-    {label:'ES',data:state.esDA,borderColor:ESC,backgroundColor:ESL,fill:true,tension:0.35,pointRadius:4,pointBackgroundColor:ESC,borderWidth:2}
-  ]},options:Object.assign({},base,{scales:{x:{grid:{display:false},ticks:{autoSkip:false}},y:{ticks:{callback:minFmt},grid:{color:'rgba(0,0,0,0.06)'}}}})});
+  mk('productChart',{type:'bar',data:{labels:state.pLbs,datasets:[
+    {label:'GC',data:state.gcPA,backgroundColor:GCL,borderColor:GCL,borderRadius:3},
+    {label:'ES',data:state.esPA,backgroundColor:ESB,borderColor:'rgba(216,90,48,0.5)',borderRadius:3}
+  ]},options:Object.assign({},base,{scales:{x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:25,font:{size:10}}},y:{beginAtZero:true,ticks:{callback:kf,font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}}})});
 
-  mk('productChart',{type:'bar',data:{labels:state.pLbls,datasets:[
-    {label:'GC',data:state.gcPA,backgroundColor:GCC,borderRadius:4},
-    {label:'ES',data:state.esPA,backgroundColor:ESC,borderRadius:4}
-  ]},options:Object.assign({},base,{scales:{x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:25,font:{size:11}}},y:{beginAtZero:true,ticks:{callback:kFmt},grid:{color:'rgba(0,0,0,0.06)'}}}})});
+  mk('blockChart',{type:'bar',data:{labels:state.lbs,datasets:[
+    {label:'Hard',data:state.hBa,backgroundColor:'#0C447C',stack:'b',borderRadius:{topLeft:0,topRight:0,bottomLeft:3,bottomRight:3}},
+    {label:'Soft',data:state.sBa,backgroundColor:'#85B7EB',stack:'b',borderRadius:{topLeft:3,topRight:3,bottomLeft:0,bottomRight:0}}
+  ]},options:Object.assign({},base,{scales:{x:{stacked:true,grid:{display:false},ticks:{autoSkip:false,font:{size:10}}},y:{stacked:true,beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10}}}}})});
 
-  mk('blockChart',{type:'bar',data:{labels:state.labels,datasets:[
-    {label:'Hard',data:state.hardB,backgroundColor:'#0C447C',stack:'b'},
-    {label:'Soft',data:state.softB,backgroundColor:'#85B7EB',stack:'b'}
-  ]},options:Object.assign({},base,{scales:{x:{stacked:true,grid:{display:false},ticks:{autoSkip:false}},y:{stacked:true,beginAtZero:true,grid:{color:'rgba(0,0,0,0.06)'}}}})});
+  mk('healthChart',{type:'bar',data:{labels:['Acceptance rate','Waitlist rate'],datasets:[
+    {label:'GC',data:[state.gcAcAll,state.gcWlAll],backgroundColor:GCL,borderColor:GCL,borderRadius:4,barThickness:36},
+    {label:'ES',data:[state.esAcAll,state.esWlAll],backgroundColor:ESB,borderColor:'rgba(216,90,48,0.5)',borderRadius:4,barThickness:36}
+  ]},options:Object.assign({},base,{scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{beginAtZero:true,max:100,ticks:{callback:pct,font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}}})});
+
+  mk('agentChart',{type:'bar',data:{labels:['Unique agents','Bookings / agent (×10)'],datasets:[
+    {label:'GC',data:[state.gcAg,r1(state.tGC/Math.max(state.gcAg,1)/10)],backgroundColor:GCL,borderColor:GCL,borderRadius:4,barThickness:36},
+    {label:'ES',data:[state.esAg,r1(state.tES/Math.max(state.esAg,1)/10)],backgroundColor:ESB,borderColor:'rgba(216,90,48,0.5)',borderRadius:4,barThickness:36}
+  ]},options:Object.assign({},base,{scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{beginAtZero:true,ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}}})});
 }
 
-// ── Update DOM ────────────────────────────────────────────────────────────
-function updateAll(){
+function buildPeriodRow(id,labels,gcArr,esArr){
+  var el=document.getElementById(id); if(!el)return;
+  el.innerHTML=labels.map(function(l,i){
+    var tot=(gcArr[i]||0)+(esArr[i]||0);
+    var sh=tot?r1((gcArr[i]||0)/tot*100):0;
+    return '<div class="period-cell"><div class="period-val">'+sh+'%</div><div class="period-lbl">'+l+'</div></div>';
+  }).join('');
+}
+
+function buildDurationTable(){
+  var tb=document.getElementById('durationTable'); if(!tb)return;
+  tb.innerHTML=state.lbs.map(function(l,i){
+    var gc=state.gcDA[i]||0, es=state.esDA[i]||0;
+    var adv=es-gc;
+    var cls=adv>0?'pos-val':'neg-val';
+    return '<tr><td class="td-label">'+l+'</td><td>'+gc+'</td><td>'+es+'</td><td class="'+cls+'">'+(adv>0?'+':'')+r0(adv)+' min</td></tr>';
+  }).join('');
+}
+
+function updateDOM(){
   var s=state;
-  var gcV=s.tGC, esV=s.tES, tot=gcV+esV;
-  var gp=r1(gcV/Math.max(tot,1)*100), ep=r1(100-gp);
-  document.getElementById('gcBar').style.width=gp+'%'; document.getElementById('gcBar').textContent=gp+'%';
-  document.getElementById('esBar').style.width=ep+'%'; document.getElementById('esBar').textContent=ep+'%';
-  document.getElementById('gcShareLbl').textContent='GC '+gp+'%';
-  document.getElementById('esShareLbl').textContent='ES '+ep+'%';
-  var l0=s.labels[0]||'', lL=s.labels[s.labels.length-1]||'';
-  document.getElementById('shareSubtitle').textContent=l0&&lL?l0+' – '+lL:'Selected period';
-  document.getElementById('k-gc').textContent=gcV.toLocaleString();
-  document.getElementById('k-es').textContent=esV.toLocaleString();
-  document.getElementById('k-gc-sub').textContent=l0&&lL?l0+' – '+lL:'–';
-  document.getElementById('k-es-sub').textContent=l0&&lL?l0+' – '+lL:'–';
-  document.getElementById('k-gcacc').textContent=s.gcAcAll+'%';
-  document.getElementById('k-esacc').textContent=s.esAcAll+'%';
-  document.getElementById('k-gcwait').textContent=s.gcWAll+'%';
-  document.getElementById('k-eswait').textContent=s.esWAll+'%';
-  document.getElementById('k-gclegs').textContent=s.gcLAll;
-  document.getElementById('k-eslegs').textContent=s.esLAll;
-  document.getElementById('k-gctg').textContent=s.gcTG.toLocaleString();
-  document.getElementById('k-estg').textContent=s.esTG.toLocaleString();
-  document.getElementById('k-gcprem').textContent=s.gcPP+'%';
-  document.getElementById('k-esprem').textContent=s.esPP+'%';
-  document.getElementById('k-gcagents').textContent=s.gcAg.toLocaleString();
-  document.getElementById('k-esagents').textContent=s.esAg.toLocaleString();
-  document.getElementById('k-gcdirect').textContent=s.gcDirAll.toLocaleString();
-  document.getElementById('k-gctransit').textContent=s.gcTrAll.toLocaleString();
-  var dd=r1(s.gcDPAll-s.esDPAll);
-  document.getElementById('directDelta').textContent='GC '+(dd>0?'+':'')+dd+'pp';
-  document.getElementById('durDelta').textContent='GC '+r0(s.esDAll-s.gcDAll)+' min shorter';
-  document.getElementById('meta-total').textContent=(s.tGC+s.tES).toLocaleString();
-  if(l0&&lL) document.getElementById('meta-range').textContent=l0+' – '+lL;
+  var gp=r1(s.tGC/Math.max(s.tGC+s.tES,1)*100);
+  var ep=r1(100-gp);
+  var latestSh=s.sh[s.sh.length-1]||0;
+  var l0=s.lbs[0]||'',lL=s.lbs[s.lbs.length-1]||'';
 
-  // Trend labels
-  var gcF=s.gcVol[0]||0, gcLst=s.gcVol[s.gcVol.length-1]||0;
-  document.getElementById('gcGrowthSub').textContent=l0&&lL?'GC bookings from '+l0+' to '+lL:'GC booking volume';
-  document.getElementById('gcGrowthLabel').textContent=s.labels.length>1?'\u2191 '+l0+': '+gcF.toLocaleString()+' \u2192 '+lL+': '+gcLst.toLocaleString()+' \u00B7 Share: '+(s.share[0]||0)+'% \u2192 '+(s.share[s.share.length-1]||0)+'%':'';
-  var dcF=s.gcDC[0]||0, dcL=s.gcDC[s.gcDC.length-1]||0;
-  document.getElementById('directTrendLabel').textContent=s.labels.length>1?'\u2191 Direct bookings: '+dcF.toLocaleString()+' in '+l0+' \u2192 '+dcL.toLocaleString()+' in '+lL:'';
-  var durF=s.gcDA[0]||0, durL=s.gcDA[s.gcDA.length-1]||0;
-  document.getElementById('durationTrendLabel').textContent=s.labels.length>1?'\u2193 GC avg duration: '+durF+' min in '+l0+' \u2192 '+durL+' min in '+lL:'';
-  var blkF=(s.hardB[0]||0)+(s.softB[0]||0), blkL=(s.hardB[s.hardB.length-1]||0)+(s.softB[s.softB.length-1]||0);
-  document.getElementById('blockLabel').textContent=s.labels.length>1?'\u2191 Block bookings: '+blkF+' in '+l0+' \u2192 '+blkL+' in '+lL:'';
+  // Stat strip
+  document.getElementById('s-gcshare').textContent=latestSh+'%';
+  document.getElementById('s-gcvol').textContent=kf(s.tGC);
+  document.getElementById('s-gcvol-sub').textContent=l0&&lL?l0+' – '+lL:'–';
+  document.getElementById('s-dur').textContent=s.gcDAll+' min';
+  document.getElementById('s-dur-sub').textContent='ES '+s.esDAll+' min';
+  document.getElementById('s-block').textContent=(s.tHard+s.tSoft).toLocaleString();
+
+  // Overview
+  document.getElementById('ov-gcpct').textContent=gp+'%';
+  document.getElementById('ov-gclbl').textContent='GC '+gp+'%';
+  document.getElementById('ov-eslbl').textContent='ES '+ep+'%';
+  document.getElementById('gcBar').style.width=gp+'%';document.getElementById('gcBar').textContent=gp+'%';
+  document.getElementById('esBar').style.width=ep+'%';document.getElementById('esBar').textContent=ep+'%';
+
+  // Growth
+  document.getElementById('gg-vol').textContent=kf(s.gcV[s.gcV.length-1]||0);
+  document.getElementById('gg-insight').textContent=l0&&lL?'↑ '+l0+': '+(s.gcV[0]||0).toLocaleString()+' → '+lL+': '+(s.gcV[s.gcV.length-1]||0).toLocaleString()+' · Share: '+(s.sh[0]||0)+'% → '+(s.sh[s.sh.length-1]||0)+'%':'–';
+
+  // Direct
+  document.getElementById('df-rate').textContent=s.gcDPAll+'%';
+  document.getElementById('df-gc-pct').textContent=s.gcDPAll+'%';
+  document.getElementById('df-es-pct').textContent=s.esDPAll+'%';
+  var dfD=r1(s.gcDPAll-s.esDPAll);
+  document.getElementById('df-insight').textContent='↑ Direct bookings: '+(s.gcDC[0]||0).toLocaleString()+' in '+l0+' → '+(s.gcDC[s.gcDC.length-1]||0).toLocaleString()+' in '+lL+' · GC rate '+(dfD>0?'+':'')+dfD+'pp vs ES';
+
+  // Route duration
+  document.getElementById('rd-dur').textContent=s.gcDAll+' min';
+  document.getElementById('rd-insight').textContent='↓ GC avg duration: '+(s.gcDA[0]||0)+' min in '+l0+' → '+(s.gcDA[s.gcDA.length-1]||0)+' min in '+lL+' · '+(s.esDAll-s.gcDAll)+' min shorter than ES';
+
+  // Block
+  document.getElementById('bl-total').textContent=(s.tHard+s.tSoft).toLocaleString();
+  document.getElementById('bl-insight').textContent='↑ Block bookings: '+(s.hBa[0]||0+s.sBa[0]||0)+' in '+l0+' → '+((s.hBa[s.hBa.length-1]||0)+(s.sBa[s.sBa.length-1]||0))+' in '+lL+' · Hard: '+s.tHard.toLocaleString()+' | Soft: '+s.tSoft.toLocaleString();
+
+  // Booking health
+  document.getElementById('bh-acc').textContent=s.gcAcAll+'%';
+  document.getElementById('bh-gc-acc').textContent=s.gcAcAll+'%';
+  document.getElementById('bh-es-acc').textContent=s.esAcAll+'%';
+  document.getElementById('bh-acc-gap').textContent=(r1(s.gcAcAll-s.esAcAll)>0?'+':'')+r1(s.gcAcAll-s.esAcAll)+'pp';
+  document.getElementById('bh-gc-wl').textContent=s.gcWlAll+'%';
+  document.getElementById('bh-es-wl').textContent=s.esWlAll+'%';
+  document.getElementById('bh-wl-gap').textContent=(r1(s.gcWlAll-s.esWlAll)>0?'+':'')+r1(s.gcWlAll-s.esWlAll)+'pp';
+  document.getElementById('bh-gc-legs').textContent=s.gcLgAll;
+  document.getElementById('bh-es-legs').textContent=s.esLgAll;
+  document.getElementById('bh-legs-gap').textContent=(r1(s.gcLgAll-s.esLgAll)>0?'+':'')+r1(s.gcLgAll-s.esLgAll);
+
+  // Product type table
+  document.getElementById('pt-gcprem').textContent=s.gcPremP+'%';
+  var pMap={gc:s.gcPr,es:s.esPr};
+  var rows=[['pt-tg','TG Contract'],['pt-tpg','Teleport Guaranteed'],['pt-ltf','LTF/ FLOWERS'],['pt-ec','Teleport eCommerce'],['pt-bu','Basic Uplift']];
+  rows.forEach(function(row){
+    var gc=pMap.gc[row[1]]||0, es=pMap.es[row[1]]||0;
+    var gcEl=document.getElementById(row[0]+'-gc');
+    var esEl=document.getElementById(row[0]+'-es');
+    if(gcEl) gcEl.textContent=gc.toLocaleString();
+    if(esEl) esEl.textContent=es.toLocaleString();
+    var pctEl=document.getElementById(row[0]+'-pct');
+    if(pctEl) pctEl.textContent=r1(gc/Math.max(s.tGC,1)*100)+'%';
+  });
+
+  // Agent base
+  document.getElementById('ab-gc').textContent=s.gcAg.toLocaleString();
+  document.getElementById('ab-gc-agents').textContent=s.gcAg.toLocaleString();
+  document.getElementById('ab-es-agents').textContent=s.esAg.toLocaleString();
+  document.getElementById('ab-gc-vol').textContent=s.tGC.toLocaleString();
+  document.getElementById('ab-es-vol').textContent=s.tES.toLocaleString();
+  document.getElementById('ab-gc-bpa').textContent=r0(s.tGC/Math.max(s.gcAg,1));
+  document.getElementById('ab-es-bpa').textContent=r0(s.tES/Math.max(s.esAg,1));
+  document.getElementById('ab-gc-dir').textContent=s.gcDPAll+'%';
+  document.getElementById('ab-es-dir').textContent=s.esDPAll+'%';
+
+  // Meta
+  document.getElementById('meta-total').textContent=(s.tGC+s.tES).toLocaleString();
+  if(l0&&lL){document.getElementById('meta-range').textContent=l0+' – '+lL;document.getElementById('sb-meta').textContent=l0+' – '+lL;}
+
+  buildPeriodRow('shareRow',s.lbs,s.gcV,s.esV);
+  buildPeriodRow('gcShareMonthRow',s.lbs,s.gcV,s.esV);
+  buildDurationTable();
 }
 
-// ── Dropdowns ─────────────────────────────────────────────────────────────
 function populateDropdowns(rows){
-  var prods=new Set(), stats=new Set();
+  var prods=new Set(),stats=new Set();
   rows.forEach(function(r){
     var src=(r['Source']||'').trim();
-    if(src!=='Teleport Core'&&src!=='ES Booking') return;
-    var p=(r['Product Type']||'').trim(); if(p) prods.add(p);
-    var s=(r['Booking Status']||'').trim(); if(s) stats.add(s);
+    if(src!=='Teleport Core'&&src!=='ES Booking')return;
+    var p=(r['Product Type']||'').trim();if(p)prods.add(p);
+    var s=(r['Booking Status']||'').trim();if(s)stats.add(s);
   });
   var pSel=document.getElementById('f-product');
   Array.from(prods).sort().forEach(function(p){var o=document.createElement('option');o.value=p;o.textContent=p;pSel.appendChild(o);});
   var sSel=document.getElementById('f-status');
   Array.from(stats).sort().forEach(function(s){var o=document.createElement('option');o.value=s;o.textContent=s;sSel.appendChild(o);});
-
-  // Set date bounds from data
-  document.getElementById('f-from').min=DATA_MIN;
-  document.getElementById('f-from').max=DATA_MAX;
-  document.getElementById('f-to').min=DATA_MIN;
-  document.getElementById('f-to').max=DATA_MAX;
+  document.getElementById('f-from').min='2025-12-01';document.getElementById('f-from').max='2026-06-30';
+  document.getElementById('f-to').min='2025-12-01';document.getElementById('f-to').max='2026-06-30';
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────
+// Sidebar nav active state
+function initNav(){
+  var navItems=document.querySelectorAll('.nav-item');
+  var sections=document.querySelectorAll('[id]');
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        navItems.forEach(function(item){
+          item.classList.toggle('active',item.getAttribute('href')==='#'+entry.target.id);
+        });
+      }
+    });
+  },{rootMargin:'-10% 0px -80% 0px'});
+  sections.forEach(function(s){observer.observe(s);});
+  navItems.forEach(function(item){
+    item.addEventListener('click',function(e){
+      e.preventDefault();
+      var target=document.querySelector(item.getAttribute('href'));
+      if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  });
+}
+
 window.addEventListener('load',function(){
   document.getElementById('loader-status').textContent='Connecting to Google Sheets...';
   Papa.parse(CSV_URL,{
@@ -620,16 +1112,17 @@ window.addEventListener('load',function(){
       setTimeout(function(){
         rawRows=results.data;
         populateDropdowns(rawRows);
-        compute(getFilteredRows());
+        compute(getFiltered());
         buildCharts();
-        updateAll();
+        updateDOM();
         document.getElementById('last-fetched').textContent=new Date().toLocaleTimeString();
         document.getElementById('loader').style.display='none';
-        document.getElementById('dashboard').style.display='block';
+        document.getElementById('dashboard').style.display='grid';
+        initNav();
       },50);
     },
     error:function(err){
-      document.getElementById('loader').innerHTML='<p style="color:#993C1D;font-size:13px;text-align:center">Could not load data. Ensure the Google Sheet is published as CSV.<br><small>'+err.message+'</small></p>';
+      document.getElementById('loader').innerHTML='<p style="color:#991b1b;font-size:13px;text-align:center;padding:20px">Could not load data from Google Sheets.<br><small>'+err.message+'</small></p>';
     }
   });
 });
