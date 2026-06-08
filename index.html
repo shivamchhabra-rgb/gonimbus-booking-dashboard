@@ -225,28 +225,97 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
       <span class="meta-pill">Fetched <span id="last-fetched">–</span></span>
     </div>
 
-    <!-- STAT STRIP -->
-    <div class="stat-strip">
-      <div class="stat-cell">
-        <div class="stat-val green" id="s-gcshare">–</div>
-        <div class="stat-lbl">GC share (latest month)</div>
-        <div class="stat-sub">vs 10.7% in Dec 2025</div>
+    <!-- BUSINESS IMPACT RIBBON -->
+    <div style="margin-bottom:0">
+
+      <!-- Focus area label row -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr) 1.2fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius-lg) var(--radius-lg) 0 0;overflow:hidden">
+        <div style="background:var(--gc-bg);padding:8px 16px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--gc-border)">
+          <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gc)">⚡ Faster Delivery</span>
+        </div>
+        <div style="background:var(--gc-bg);padding:8px 16px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--gc-border)">
+          <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gc)">⚡ Faster Delivery</span>
+        </div>
+        <div style="background:var(--blue-bg);padding:8px 16px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--blue-border)">
+          <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--blue)">💰 Revenue Upscaling</span>
+        </div>
+        <div style="background:#fdf4ff;padding:8px 16px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #e9d5ff">
+          <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#7c3aed">😊 User Friendly</span>
+        </div>
       </div>
-      <div class="stat-cell">
-        <div class="stat-val green" id="s-gcvol">–</div>
-        <div class="stat-lbl">GC bookings</div>
-        <div class="stat-sub" id="s-gcvol-sub">All months</div>
+
+      <!-- Metric row -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr) 1.2fr;gap:1px;background:var(--border);border:1px solid var(--border);border-top:none;overflow:hidden">
+        <!-- Flying hours saved -->
+        <div style="background:var(--white);padding:16px 18px">
+          <div style="font-family:'DM Mono',monospace;font-size:26px;font-weight:500;color:var(--gc);line-height:1" id="r-hrs-saved">–</div>
+          <div style="font-size:12px;font-weight:500;color:var(--ink-2);margin-top:5px">Flying hours saved</div>
+          <div style="font-size:11px;color:var(--ink-4);margin-top:2px">GC vs avg route duration</div>
+        </div>
+        <!-- Direct flights -->
+        <div style="background:var(--white);padding:16px 18px;border-left:1px solid var(--border)">
+          <div style="font-family:'DM Mono',monospace;font-size:26px;font-weight:500;color:var(--gc);line-height:1" id="r-direct-count">–</div>
+          <div style="font-size:12px;font-weight:500;color:var(--ink-2);margin-top:5px">Direct flight bookings</div>
+          <div style="font-size:11px;color:var(--ink-4);margin-top:2px"><span id="r-direct-rate">–</span> of GC bookings are direct</div>
+        </div>
+        <!-- Premium product -->
+        <div style="background:var(--white);padding:16px 18px;border-left:1px solid var(--border)">
+          <div style="display:flex;align-items:baseline;gap:10px">
+            <div>
+              <div style="font-family:'DM Mono',monospace;font-size:26px;font-weight:500;color:var(--blue);line-height:1" id="r-gc-prem">–</div>
+              <div style="font-size:10px;color:var(--ink-4);margin-top:2px">GC premium mix</div>
+            </div>
+            <div style="font-size:18px;color:var(--border)">vs</div>
+            <div>
+              <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:400;color:var(--ink-3);line-height:1" id="r-es-prem">–</div>
+              <div style="font-size:10px;color:var(--ink-4);margin-top:2px">ES premium mix</div>
+            </div>
+          </div>
+          <div style="font-size:12px;font-weight:500;color:var(--ink-2);margin-top:6px">Premium product mix</div>
+          <div style="font-size:11px;color:var(--ink-4)">TG Contract · Guaranteed · LTF</div>
+        </div>
+        <!-- Active agents -->
+        <div style="background:var(--white);padding:16px 18px;border-left:1px solid var(--border)">
+          <div style="display:flex;align-items:baseline;gap:10px">
+            <div>
+              <div style="font-family:'DM Mono',monospace;font-size:26px;font-weight:500;color:#7c3aed;line-height:1" id="r-gc-agents">–</div>
+              <div style="font-size:10px;color:var(--ink-4);margin-top:2px">GC agents</div>
+            </div>
+            <div style="font-size:18px;color:var(--border)">vs</div>
+            <div>
+              <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:400;color:var(--ink-3);line-height:1" id="r-es-agents">–</div>
+              <div style="font-size:10px;color:var(--ink-4);margin-top:2px">ES agents</div>
+            </div>
+          </div>
+          <div style="font-size:12px;font-weight:500;color:var(--ink-2);margin-top:6px">Active agents on platform</div>
+          <div style="font-size:11px;color:var(--ink-4)">Unique agents with bookings</div>
+        </div>
       </div>
-      <div class="stat-cell">
-        <div class="stat-val" id="s-dur">–</div>
-        <div class="stat-lbl">GC avg route duration</div>
-        <div class="stat-sub" id="s-dur-sub">vs ES –</div>
+
+      <!-- GC Progression bar -->
+      <div style="background:var(--white);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg);padding:14px 18px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;font-weight:600;color:var(--ink-2)">GC progression</span>
+            <span style="font-size:10px;color:var(--ink-4)" id="r-prog-range">Dec 2025 – Jun 2026</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <span style="font-size:11px;color:var(--ink-3)">GC bookings: <span style="font-family:'DM Mono',monospace;font-weight:500;color:var(--gc)" id="r-gc-total">–</span></span>
+            <span style="font-size:11px;color:var(--ink-3)">GC share: <span style="font-family:'DM Mono',monospace;font-weight:500;color:var(--gc)" id="r-gc-share">–</span></span>
+            <span style="font-size:11px;color:var(--ink-3)">Next target: <span style="font-family:'DM Mono',monospace;font-weight:500;color:#7c3aed">80%</span></span>
+          </div>
+        </div>
+        <div style="position:relative;height:8px;background:var(--surface);border-radius:4px;overflow:hidden;border:1px solid var(--border)">
+          <div id="r-prog-bar" style="position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#0a6640,var(--gc-line));border-radius:4px;transition:width .6s ease;width:0%"></div>
+          <div style="position:absolute;left:80%;top:-3px;width:1px;height:14px;background:#7c3aed;opacity:.6"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--ink-4)">
+          <span>0%</span>
+          <span style="color:#7c3aed">80% target</span>
+          <span>100%</span>
+        </div>
       </div>
-      <div class="stat-cell">
-        <div class="stat-val green" id="s-block">–</div>
-        <div class="stat-lbl">Block bookings</div>
-        <div class="stat-sub">Hard + soft (GC only)</div>
-      </div>
+
     </div>
   </div>
 
@@ -620,22 +689,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
       <!-- Block type context strip -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-bottom:1px solid var(--border)">
         <div style="background:var(--white);padding:14px 18px">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#0C447C"></span>
-            <span style="font-size:11px;font-weight:600;color:#0C447C;letter-spacing:.06em;text-transform:uppercase">Hard block</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#0C447C"></span>
+              <span style="font-size:10px;font-weight:600;color:#0C447C;letter-spacing:.08em;text-transform:uppercase">Hard block</span>
+            </div>
+            <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:#0C447C" id="bl-hard">–</div>
           </div>
-          <div style="font-size:12px;color:var(--ink-2);line-height:1.7">Agent purchases a fixed allocation of capacity on a specific flight and O&amp;D for a defined period. Teleport earns the revenue regardless of whether the agent loads cargo — zero revenue risk for Teleport.</div>
-          <div style="margin-top:8px;font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:#0C447C" id="bl-hard">–</div>
-          <div style="font-size:10px;color:var(--ink-4);margin-top:2px">hard block bookings to date</div>
+          <div style="font-size:11px;color:var(--ink-3);line-height:1.6">Fixed capacity purchase. Teleport earns revenue regardless of whether the agent loads cargo.</div>
         </div>
         <div style="background:var(--white);padding:14px 18px;border-left:1px solid var(--border)">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#85B7EB"></span>
-            <span style="font-size:11px;font-weight:600;color:#378ADD;letter-spacing:.06em;text-transform:uppercase">Soft block</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#85B7EB"></span>
+              <span style="font-size:10px;font-weight:600;color:#378ADD;letter-spacing:.08em;text-transform:uppercase">Soft block</span>
+            </div>
+            <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:#378ADD" id="bl-soft">–</div>
           </div>
-          <div style="font-size:12px;color:var(--ink-2);line-height:1.7">Agent reserves capacity with a confirmed booking right, subject to availability confirmation. Provides Teleport with strong demand signals for planning while giving agents flexibility — a commercial bridge to hard block commitment.</div>
-          <div style="margin-top:8px;font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:#378ADD" id="bl-soft">–</div>
-          <div style="font-size:10px;color:var(--ink-4);margin-top:2px">soft block bookings to date</div>
+          <div style="font-size:11px;color:var(--ink-3);line-height:1.6">Reserved capacity with booking right, subject to confirmation. Strong demand signal for planning; commercial step toward hard block.</div>
         </div>
       </div>
 
@@ -1047,15 +1118,22 @@ function updateDOM(){
   var latestSh=s.sh[s.sh.length-1]||0;
   var l0=s.lbs[0]||'',lL=s.lbs[s.lbs.length-1]||'';
 
-  // Stat strip
-  document.getElementById('s-gcshare').textContent=latestSh+'%';
-  document.getElementById('s-gcvol').textContent=kf(s.tGC);
-  document.getElementById('s-gcvol-sub').textContent=l0&&lL?l0+' – '+lL:'–';
-  document.getElementById('s-dur').textContent=s.gcDAll+' min';
-  document.getElementById('s-dur-sub').textContent='ES '+s.esDAll+' min';
-  document.getElementById('s-block').textContent=(s.tHard+s.tSoft).toLocaleString();
-
-  // Overview
+  // Business impact ribbon
+  var ribbonDiff=s.esDAll-s.gcDAll;
+  var ribbonHrs=Math.round(s.tGC*ribbonDiff/60);
+  document.getElementById('r-hrs-saved').textContent=ribbonHrs>0?ribbonHrs.toLocaleString()+'h':'–';
+  document.getElementById('r-direct-count').textContent=s.gcDirAll.toLocaleString();
+  document.getElementById('r-direct-rate').textContent=s.gcDPAll+'%';
+  document.getElementById('r-gc-prem').textContent=s.gcPremP+'%';
+  document.getElementById('r-es-prem').textContent=s.esPremP+'%';
+  document.getElementById('r-gc-agents').textContent=s.gcAg.toLocaleString();
+  document.getElementById('r-es-agents').textContent=s.esAg.toLocaleString();
+  document.getElementById('r-gc-total').textContent=s.tGC.toLocaleString();
+  var latestShare=s.sh[s.sh.length-1]||0;
+  document.getElementById('r-gc-share').textContent=latestShare+'%';
+  document.getElementById('r-prog-bar').style.width=Math.min(latestShare,100)+'%';
+  if(l0&&lL) document.getElementById('r-prog-range').textContent=l0+' – '+lL;
+  // Meta
   document.getElementById('ov-gcpct').textContent=gp+'%';
   document.getElementById('ov-gclbl').textContent='GC '+gp+'%';
   document.getElementById('ov-eslbl').textContent='ES '+ep+'%';
