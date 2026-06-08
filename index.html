@@ -294,7 +294,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
       <div class="metric-card-header">
         <div>
           <div class="metric-tag tag-green">Revenue yield</div>
-          <div class="metric-name">Booking count by product type — GC vs ES</div>
+          <div class="metric-name">Product type mix — GC vs ES (% of total bookings)</div>
           <div class="metric-stream">Higher-tier products (TG Contract, Teleport Guaranteed, LTF/Flowers) carry premium rates. A platform handling more of these protects Teleport's top-line revenue.</div>
         </div>
         <div class="metric-current">
@@ -308,20 +308,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
       </div>
       <div class="chart-area">
         <div class="chart-legend">
-          <span class="cleg"><span class="cleg-dot" style="background:var(--gc-line)"></span>GC</span>
-          <span class="cleg"><span class="cleg-dot" style="background:var(--es-line)"></span>ES</span>
+          <span class="cleg"><span class="cleg-dot" style="background:var(--gc-line)"></span>GC % of total</span>
+          <span class="cleg"><span class="cleg-dot" style="background:var(--es-line)"></span>ES % of total</span>
         </div>
         <div class="cw" style="height:260px"><canvas id="productChart"></canvas></div>
-        <div class="chart-insight">GC premium mix 15.5% vs ES 12.4% — higher share of high-yield products despite being in growth phase</div>
+        <div class="chart-insight">GC premium mix 15.5% vs ES 12.4% — each bar shows that product type as % of total bookings on that platform</div>
       </div>
       <table class="mini-table" style="margin:0">
-        <thead><tr><th>Product</th><th>GC bookings</th><th>ES bookings</th><th>GC mix %</th></tr></thead>
+        <thead><tr><th>Product</th><th>GC bookings</th><th>GC % of total</th><th>ES bookings</th><th>ES % of total</th></tr></thead>
         <tbody>
-          <tr><td class="td-label">TG Contract</td><td class="pos-val" id="pt-tg-gc">–</td><td id="pt-tg-es">–</td><td id="pt-tg-pct">–</td></tr>
-          <tr><td class="td-label">Teleport Guaranteed</td><td id="pt-tpg-gc">–</td><td id="pt-tpg-es">–</td><td>–</td></tr>
-          <tr><td class="td-label">LTF / Flowers</td><td id="pt-ltf-gc">–</td><td id="pt-ltf-es">–</td><td>–</td></tr>
-          <tr><td class="td-label">Teleport eCommerce</td><td id="pt-ec-gc">–</td><td class="neg-val" id="pt-ec-es">–</td><td>–</td></tr>
-          <tr><td class="td-label">Basic Uplift</td><td id="pt-bu-gc">–</td><td id="pt-bu-es">–</td><td>–</td></tr>
+          <tr><td class="td-label">TG Contract</td><td class="pos-val" id="pt-tg-gc">–</td><td id="pt-tg-gcpct">–</td><td id="pt-tg-es">–</td><td id="pt-tg-espct">–</td></tr>
+          <tr><td class="td-label">Teleport Guaranteed</td><td id="pt-tpg-gc">–</td><td id="pt-tpg-gcpct">–</td><td id="pt-tpg-es">–</td><td id="pt-tpg-espct">–</td></tr>
+          <tr><td class="td-label">LTF / Flowers</td><td id="pt-ltf-gc">–</td><td id="pt-ltf-gcpct">–</td><td id="pt-ltf-es">–</td><td id="pt-ltf-espct">–</td></tr>
+          <tr><td class="td-label">Teleport eCommerce</td><td id="pt-ec-gc">–</td><td id="pt-ec-gcpct">–</td><td class="neg-val" id="pt-ec-es">–</td><td id="pt-ec-espct">–</td></tr>
+          <tr><td class="td-label">Basic Uplift</td><td id="pt-bu-gc">–</td><td id="pt-bu-gcpct">–</td><td id="pt-bu-es">–</td><td id="pt-bu-espct">–</td></tr>
+          <tr><td class="td-label">FLEXI</td><td id="pt-fl-gc">–</td><td id="pt-fl-gcpct">–</td><td id="pt-fl-es">–</td><td id="pt-fl-espct">–</td></tr>
+          <tr><td class="td-label">Next Day</td><td id="pt-nd-gc">–</td><td id="pt-nd-gcpct">–</td><td id="pt-nd-es">–</td><td id="pt-nd-espct">–</td></tr>
+          <tr><td class="td-label">General</td><td id="pt-gn-gc">–</td><td id="pt-gn-gcpct">–</td><td id="pt-gn-es">–</td><td id="pt-gn-espct">–</td></tr>
         </tbody>
       </table>
       <div class="levers-section">
@@ -903,13 +906,15 @@ function compute(rows){
   var pLbs=['Basic Uplift','TG Contract','TP Guaranteed','TP eCommerce','General','LTF/Flowers','Flexi','Next Day'];
   var gcPA=pKeys.map(function(k){return gcPr[k]||0;});
   var esPA=pKeys.map(function(k){return esPr[k]||0;});
+  var gcPP=pKeys.map(function(k){return r1((gcPr[k]||0)/Math.max(tGC,1)*100);});
+  var esPP=pKeys.map(function(k){return r1((esPr[k]||0)/Math.max(tES,1)*100);});
   var gcPremC=(gcPr['TG Contract']||0)+(gcPr['Teleport Guaranteed']||0)+(gcPr['LTF/ FLOWERS']||0);
   var gcPremP=r1(gcPremC/Math.max(tGC,1)*100);
   var esPremC=(esPr['TG Contract']||0)+(esPr['Teleport Guaranteed']||0)+(esPr['LTF/ FLOWERS']||0);
   var esPremP=r1(esPremC/Math.max(tES,1)*100);
   var tHard=hBa.reduce(function(a,b){return a+b;},0);
   var tSoft=sBa.reduce(function(a,b){return a+b;},0);
-  state={ms:ms,lbs:lbs,gcV:gcV,esV:esV,sh:sh,gcDA:gcDA,esDA:esDA,gcDC:gcDC,gcDP:gcDP,hBa:hBa,sBa:sBa,pLbs:pLbs,gcPA:gcPA,esPA:esPA,
+  state={ms:ms,lbs:lbs,gcV:gcV,esV:esV,sh:sh,gcDA:gcDA,esDA:esDA,gcDC:gcDC,gcDP:gcDP,hBa:hBa,sBa:sBa,pLbs:pLbs,gcPA:gcPA,esPA:esPA,gcPP:gcPP,esPP:esPP,
     tGC:tGC,tES:tES,gcDAll:gcDAll,esDAll:esDAll,gcDPAll:gcDPAll,esDPAll:esDPAll,
     gcLgAll:gcLgAll,esLgAll:esLgAll,gcWlAll:gcWlAll,esWlAll:esWlAll,gcAcAll:gcAcAll,esAcAll:esAcAll,
     gcPremP:gcPremP,esPremP:esPremP,gcPr:gcPr,esPr:esPr,gcAg:gcAg.size,esAg:esAg.size,
@@ -938,9 +943,9 @@ function buildCharts(){
   ]},options:Object.assign({},base,{scales:{x:{grid:{display:false},ticks:{autoSkip:false,font:{size:10}}},y:{ticks:{callback:mf,font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}}})});
 
   mk('productChart',{type:'bar',data:{labels:state.pLbs,datasets:[
-    {label:'GC',data:state.gcPA,backgroundColor:GCL,borderColor:GCL,borderRadius:3},
-    {label:'ES',data:state.esPA,backgroundColor:ESB,borderColor:'rgba(216,90,48,0.5)',borderRadius:3}
-  ]},options:Object.assign({},base,{scales:{x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:25,font:{size:10}}},y:{beginAtZero:true,ticks:{callback:kf,font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}}})});
+    {label:'GC %',data:state.gcPP,backgroundColor:GCL,borderColor:GCL,borderRadius:3},
+    {label:'ES %',data:state.esPP,backgroundColor:ESB,borderColor:'rgba(216,90,48,0.5)',borderRadius:3}
+  ]},options:Object.assign({},base,{scales:{x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:25,font:{size:10}}},y:{beginAtZero:true,ticks:{callback:function(v){return v+'%'},font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}}})});
 
   mk('blockChart',{type:'bar',data:{labels:state.lbs,datasets:[
     {label:'Hard',data:state.hBa,backgroundColor:'#0C447C',stack:'b',borderRadius:{topLeft:0,topRight:0,bottomLeft:3,bottomRight:3}},
@@ -1032,16 +1037,29 @@ function updateDOM(){
 
   // Product type table
   document.getElementById('pt-gcprem').textContent=s.gcPremP+'%';
-  var pMap={gc:s.gcPr,es:s.esPr};
-  var rows=[['pt-tg','TG Contract'],['pt-tpg','Teleport Guaranteed'],['pt-ltf','LTF/ FLOWERS'],['pt-ec','Teleport eCommerce'],['pt-bu','Basic Uplift']];
-  rows.forEach(function(row){
-    var gc=pMap.gc[row[1]]||0, es=pMap.es[row[1]]||0;
-    var gcEl=document.getElementById(row[0]+'-gc');
-    var esEl=document.getElementById(row[0]+'-es');
+  var ptRows=[
+    ['pt-tg',  'TG Contract'],
+    ['pt-tpg', 'Teleport Guaranteed'],
+    ['pt-ltf', 'LTF/ FLOWERS'],
+    ['pt-ec',  'Teleport eCommerce'],
+    ['pt-bu',  'Basic Uplift'],
+    ['pt-fl',  'FLEXI'],
+    ['pt-nd',  'Next Day'],
+    ['pt-gn',  'GENERAL']
+  ];
+  ptRows.forEach(function(row){
+    var id=row[0], key=row[1];
+    var gc=s.gcPr[key]||0, es=s.esPr[key]||0;
+    var gcPct=r1(gc/Math.max(s.tGC,1)*100);
+    var esPct=r1(es/Math.max(s.tES,1)*100);
+    var gcEl=document.getElementById(id+'-gc');
+    var gcPctEl=document.getElementById(id+'-gcpct');
+    var esEl=document.getElementById(id+'-es');
+    var esPctEl=document.getElementById(id+'-espct');
     if(gcEl) gcEl.textContent=gc.toLocaleString();
+    if(gcPctEl) gcPctEl.textContent=gcPct+'%';
     if(esEl) esEl.textContent=es.toLocaleString();
-    var pctEl=document.getElementById(row[0]+'-pct');
-    if(pctEl) pctEl.textContent=r1(gc/Math.max(s.tGC,1)*100)+'%';
+    if(esPctEl) esPctEl.textContent=esPct+'%';
   });
 
   // Agent base
