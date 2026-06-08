@@ -163,6 +163,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
   <div class="spinner"></div>
   <p>Loading live data from Google Sheets...</p>
   <small id="loader-status">Connecting...</small>
+  <!-- Debug panel -->
+  <div id="debug-panel" style="margin-top:24px;width:480px;max-width:90vw;background:#fff;border:1px solid #e5e3dd;border-radius:10px;padding:16px;font-family:'DM Mono',monospace;font-size:11px;text-align:left;display:none">
+    <div style="font-size:11px;font-weight:600;color:#111;margin-bottom:10px;font-family:-apple-system,sans-serif">🔍 Debug log</div>
+    <div id="debug-log" style="display:flex;flex-direction:column;gap:5px"></div>
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid #e5e3dd">
+      <button onclick="retryLoad()" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #0a6640;color:#0a6640;background:transparent;cursor:pointer;margin-right:8px">↺ Retry</button>
+      <button onclick="skipToDemo()" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #e5e3dd;color:#6b7280;background:transparent;cursor:pointer">Show demo data</button>
+    </div>
+  </div>
 </div>
 
 <div class="layout" id="dashboard" style="display:none">
@@ -1317,52 +1326,131 @@ function initNav(){
 }
 
 window.addEventListener('load',function(){
-  var PROXY='https://api.allorigins.win/raw?url=';
-  var fetchUrl=PROXY+encodeURIComponent(CSV_URL);
-  document.getElementById('loader-status').textContent='Connecting to Google Sheets...';
-  fetch(fetchUrl)
-    .then(function(res){
-      if(!res.ok) throw new Error('Network response was not ok: '+res.status);
-      return res.text();
-    })
-    .then(function(csvText){
-      document.getElementById('loader-status').textContent='Processing records...';
+
+  // ── Debug helpers ─────────────────────────────────────────────────────
+  var debugVisible=false;
+  function dbLog(msg,type){
+    if(!debugVisible){
+      document.getElementById('debug-panel').style.display='block';
+      debugVisible=true;
+    }
+    var el=document.createElement('div');
+    var colors={info:'#1a56db',ok:'#0a6640',warn:'#92400e',error:'#991b1b'};
+    var icons={info:'ℹ',ok:'✓',warn:'⚠',error:'✕'};
+    el.style.cssText='padding:4px 8px;border-radius:4px;background:'+(type==='error'?'#fef2f2':type==='ok'?'#ecfdf5':type==='warn'?'#fffbeb':'#eff6ff')+';color:'+(colors[type]||'#111')+';line-height:1.5';
+    el.textContent=(icons[type]||'·')+' '+msg;
+    document.getElementById('debug-log').appendChild(el);
+    document.getElementById('loader-status').textContent=msg;
+    console.log('[Dashboard]',type.toUpperCase(),msg);
+  }
+
+  function dbSuccess(csvText){
+    dbLog('CSV received — '+csvText.length.toLocaleString()+' characters','ok');
+    var firstLine=csvText.split('\n')[0];
+    dbLog('First row headers: '+firstLine.substring(0,120),'info');
+    try{
+      dbLog('Parsing CSV with PapaParse...','info');
       var results=Papa.parse(csvText,{header:true,skipEmptyLines:true});
+      dbLog('Parsed '+results.data.length.toLocaleString()+' rows, '+results.meta.fields.length+' columns','ok');
+      if(results.errors.length) dbLog('Parse warnings: '+results.errors[0].message,'warn');
+      var sampleSrc=(results.data[0]||{})['Source']||'(not found)';
+      dbLog('Sample "Source" value: '+sampleSrc,'info');
+      var sampleDate=(results.data[0]||{})['Created At']||'(not found)';
+      dbLog('Sample "Created At" value: '+sampleDate,'info');
+      dbLog('Running compute()...','info');
+      rawRows=results.data;
+      populateDropdowns(rawRows);
+      compute(getFiltered());
+      dbLog('compute() done — GC rows: '+state.tGC+', ES rows: '+state.tES,'ok');
+      dbLog('Building charts...','info');
+      buildCharts();
+      dbLog('Updating DOM...','info');
+      updateDOM();
+      dbLog('Dashboard ready ✓','ok');
+      document.getElementById('last-fetched').textContent=new Date().toLocaleTimeString();
       setTimeout(function(){
-        rawRows=results.data;
-        populateDropdowns(rawRows);
-        compute(getFiltered());
-        buildCharts();
-        updateDOM();
-        document.getElementById('last-fetched').textContent=new Date().toLocaleTimeString();
         document.getElementById('loader').style.display='none';
         document.getElementById('dashboard').style.display='grid';
         initNav();
-      },50);
-    })
-    .catch(function(err){
-      // Fallback: try direct fetch without proxy
-      fetch(CSV_URL)
-        .then(function(res){ return res.text(); })
-        .then(function(csvText){
-          document.getElementById('loader-status').textContent='Processing records...';
-          var results=Papa.parse(csvText,{header:true,skipEmptyLines:true});
-          setTimeout(function(){
-            rawRows=results.data;
-            populateDropdowns(rawRows);
-            compute(getFiltered());
-            buildCharts();
-            updateDOM();
-            document.getElementById('last-fetched').textContent=new Date().toLocaleTimeString();
-            document.getElementById('loader').style.display='none';
-            document.getElementById('dashboard').style.display='grid';
-            initNav();
-          },50);
-        })
-        .catch(function(err2){
-          document.getElementById('loader').innerHTML='<div style="text-align:center;padding:40px"><p style="color:#991b1b;font-size:13px;margin-bottom:8px">Could not load data from Google Sheets.</p><p style="font-size:11px;color:#6b7280">Make sure the sheet is published: File → Share → Publish to web → CSV</p><p style="font-size:11px;color:#9ca3af;margin-top:6px">'+err2.message+'</p></div>';
-        });
-    });
+      },800);
+    }catch(e){
+      dbLog('JS error in processing: '+e.message,'error');
+      dbLog('Stack: '+e.stack.split('\n')[1],'error');
+    }
+  }
+
+  function tryFetch(){
+    var PROXY='https://api.allorigins.win/raw?url=';
+    var fetchUrl=PROXY+encodeURIComponent(CSV_URL);
+    dbLog('Step 1: Trying proxy fetch...','info');
+    dbLog('URL: '+CSV_URL.substring(0,80)+'...','info');
+
+    var timeout=setTimeout(function(){
+      dbLog('Proxy timed out after 10s — trying direct fetch','warn');
+      tryDirect();
+    },10000);
+
+    fetch(fetchUrl)
+      .then(function(res){
+        clearTimeout(timeout);
+        dbLog('Proxy responded — HTTP '+res.status+' '+res.statusText,'ok');
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        return res.text();
+      })
+      .then(function(csvText){
+        if(!csvText||csvText.trim().length<100){
+          dbLog('Proxy returned empty or too-short response ('+csvText.length+' chars) — trying direct','warn');
+          tryDirect(); return;
+        }
+        if(csvText.includes('<!DOCTYPE')||csvText.includes('<html')){
+          dbLog('Proxy returned HTML instead of CSV — trying direct fetch','warn');
+          tryDirect(); return;
+        }
+        dbLog('Proxy fetch successful','ok');
+        dbSuccess(csvText);
+      })
+      .catch(function(err){
+        clearTimeout(timeout);
+        dbLog('Proxy fetch failed: '+err.message,'warn');
+        tryDirect();
+      });
+  }
+
+  function tryDirect(){
+    dbLog('Step 2: Trying direct fetch (may be blocked by CORS)...','info');
+    fetch(CSV_URL)
+      .then(function(res){
+        dbLog('Direct fetch responded — HTTP '+res.status,'ok');
+        return res.text();
+      })
+      .then(function(csvText){
+        if(!csvText||csvText.includes('<!DOCTYPE')){
+          dbLog('Direct fetch returned HTML — CORS likely blocking','error');
+          dbLog('Fix: re-publish the sheet via File → Share → Publish to web → CSV','warn');
+          return;
+        }
+        dbLog('Direct fetch successful','ok');
+        dbSuccess(csvText);
+      })
+      .catch(function(err){
+        dbLog('Direct fetch also failed: '+err.message,'error');
+        dbLog('Likely cause: Sheet not published publicly as CSV','error');
+        dbLog('Fix: Google Sheets → File → Share → Publish to web → select tab → CSV → Publish','warn');
+      });
+  }
+
+  window.retryLoad=function(){ document.getElementById('debug-log').innerHTML=''; tryFetch(); };
+  window.skipToDemo=function(){
+    dbLog('Loading demo data (hardcoded fallback)...','warn');
+    // minimal stub so dashboard renders
+    state={ms:['2025-12'],lbs:['Dec 25'],gcV:[3810],esV:[31940],sh:[10.7],gcDA:[1138],esDA:[686],gcDC:[2283],gcDP:[59.9],hBa:[124],sBa:[119],pLbs:['Basic Uplift','TG Contract','TP Guaranteed','TP eCommerce','General','LTF/Flowers','Flexi','Next Day'],gcPA:[45865,5740,3919,1840,7109,896,633,428],esPA:[69340,9413,7010,32659,10159,564,1309,1084],gcPP:[67.5,8.4,5.8,2.7,10.5,1.3,0.9,0.6],esPP:[50.4,6.8,5.1,23.7,7.4,0.4,1.0,0.8],tGC:67964,tES:137548,gcDAll:772,esDAll:884,gcDPAll:70.7,esDPAll:68.5,gcLgAll:1.354,esLgAll:1.379,gcWlAll:1.21,esWlAll:0.42,gcAcAll:81.9,esAcAll:82.4,gcPremP:15.5,esPremP:12.4,gcPr:{'TG Contract':5740,'Teleport Guaranteed':3919,'LTF/ FLOWERS':896,'Teleport eCommerce':1840,'Basic Uplift':45865,'GENERAL':7109,'FLEXI':633,'Next Day':428},esPr:{'TG Contract':9413,'Teleport Guaranteed':7010,'LTF/ FLOWERS':564,'Teleport eCommerce':32659,'Basic Uplift':69340,'GENERAL':10159,'FLEXI':1309,'Next Day':1084},gcAg:802,esAg:763,gcDirAll:47723,gcTrAll:20241,tHard:2949,tSoft:2858};
+    buildCharts(); updateDOM();
+    document.getElementById('loader').style.display='none';
+    document.getElementById('dashboard').style.display='grid';
+    initNav();
+  };
+
+  tryFetch();
 });
 </script>
 </body>
