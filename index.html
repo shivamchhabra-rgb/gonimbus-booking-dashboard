@@ -1097,7 +1097,7 @@ function compute(rows){
     tGC:tGC,tES:tES,gcDAll:gcDAll,esDAll:esDAll,gcDPAll:gcDPAll,esDPAll:esDPAll,
     gcLgAll:gcLgAll,esLgAll:esLgAll,gcWlAll:gcWlAll,esWlAll:esWlAll,gcAcAll:gcAcAll,esAcAll:esAcAll,
     gcPremP:gcPremP,esPremP:esPremP,gcPr:gcPr,esPr:esPr,gcAg:gcAg.size,esAg:esAg.size,
-    gcDiAll:gcDiAll,tHard:tHard,tSoft:tSoft};
+    gcDiAll:gcDiAll,gcDirAll:gcDiAll,gcTrAll:tGC-gcDiAll,tHard:tHard,tSoft:tSoft};
 }
 
 function buildCharts(){
@@ -1169,8 +1169,6 @@ function updateDOM(){
   var l0=s.lbs[0]||'',lL=s.lbs[s.lbs.length-1]||'';
 
   // Business impact ribbon
-  var ribbonDiff=s.esDAll-s.gcDAll;
-  var ribbonHrs=Math.round(s.tGC*ribbonDiff/60);
   var ribbonDiff=s.esDAll-s.gcDAll;
   var ribbonHrs=Math.round(s.tGC*ribbonDiff/60);
   document.getElementById('r-hrs-saved').textContent=ribbonHrs>0?ribbonHrs.toLocaleString()+'h':'–';
