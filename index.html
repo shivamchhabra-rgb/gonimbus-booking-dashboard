@@ -379,7 +379,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
       </div>
       <div class="outcome-row">
         <div class="outcome-label">Outcome</div>
-        <div class="outcome-text">GC becomes the primary platform with ES decommissioned or kept as fallback. Crossing 80% share is the next structural milestone; full migration is the end state.</div>
+        <div class="outcome-text">GC becomes the primary platform for Teleport's agent network. Crossing 80% share is the next structural milestone; full migration is the end state.</div>
       </div>
       <div class="chart-area">
         <div class="chart-legend">
@@ -433,7 +433,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
         <div>
           <div class="metric-tag tag-green">Service quality</div>
           <div class="metric-name">Direct flight rate + monthly volume (GC)</div>
-          <div class="metric-stream">Direct flights = faster delivery, fewer handoffs, lower ground handling costs. GC prioritises direct routing — ES shows all flights regardless of capacity.</div>
+          <div class="metric-stream">Direct flights mean faster delivery, fewer handoffs, and lower ground handling costs. GC's dynamic route engine prioritises direct options at the point of booking.</div>
         </div>
         <div class="metric-current">
           <div class="metric-current-val green" id="df-rate">–</div>
@@ -442,7 +442,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
       </div>
       <div class="outcome-row">
         <div class="outcome-label">Outcome</div>
-        <div class="outcome-text">GC's dynamic route generation surfaces direct options more consistently than ES, resulting in a higher proportion of direct bookings and reducing unnecessary transit routing — saving operational cost for Teleport.</div>
+        <div class="outcome-text">GC's dynamic route generation surfaces direct flight options more consistently, resulting in a higher proportion of direct bookings and fewer transit hops — reducing operational cost and improving delivery speed for Teleport's customers.</div>
       </div>
       <div class="chart-area">
         <div class="chart-legend">
@@ -469,7 +469,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
         </div>
         <div class="lever">
           <div class="lever-header"><span class="lever-id">L-02</span><span class="lever-title">Real-time capacity check</span></div>
-          <div class="lever-body">GC only shows routes with confirmed available capacity. ES surfaces all routes including those without space, leading agents to transit fallbacks when direct shows as "full".</div>
+          <div class="lever-body">GC validates available capacity at point of booking and only surfaces routes where space is confirmed — ensuring agents see actionable options and reducing transit fallbacks caused by unavailable direct capacity.</div>
           <span class="lever-impact impact-green">↑ Direct rate</span>
         </div>
         <div class="lever">
@@ -479,7 +479,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
         </div>
         <div class="lever">
           <div class="lever-header"><span class="lever-id">L-04</span><span class="lever-title">SSIM/ASM/SSM schedule integration</span></div>
-          <div class="lever-body">Live schedule updates ensure agents see current flight options. Stale schedules in ES may suppress valid direct routes that now exist.</div>
+          <div class="lever-body">GC's SSIM/ASM/SSM integration keeps flight schedules current — ensuring agents always see the latest departure options and valid direct routes across the network.</div>
           <span class="lever-impact impact-blue">↑ Coverage</span>
         </div>
       </div>
@@ -517,7 +517,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
       </div>
       <div class="outcome-row">
         <div class="outcome-label">Outcome</div>
-        <div class="outcome-text">GC-routed shipments arrive faster on average than ES-routed ones, and the gap is widening over time — demonstrating that GC's routing intelligence compounds as the platform matures.</div>
+        <div class="outcome-text">GC-routed shipments arrive faster on average, and the gap between GC and ES is widening over time — demonstrating that GC's routing intelligence compounds as the platform matures and more agents adopt it.</div>
       </div>
 
       <!-- Impact strip -->
@@ -540,7 +540,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
         <div style="background:var(--white);padding:14px 18px;border-left:2px dashed var(--gc-border)">
           <div style="font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px">Additional potential</div>
           <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:var(--ink)" id="rd-hrs-potential">–</div>
-          <div style="font-size:10px;color:var(--ink-4);margin-top:2px">if ES also used GC routing</div>
+          <div style="font-size:10px;color:var(--ink-4);margin-top:2px">across full platform booking volume</div>
         </div>
       </div>
 
@@ -584,11 +584,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
           <div class="wi-title green">✓ &nbsp;What went well</div>
           <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>GC improved 39% — from 1,138 min (Dec) to 688 min (May)</span></div>
           <div class="wi-item"><span class="wi-bullet bullet-green"></span><span id="rd-well-hrs">112 min saved per booking × GC volume = 126,933 flying hours saved for Teleport's network</span></div>
-          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>GC improving while ES worsens — the divergence is the most compelling story in the data</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>GC route duration improving consistently month-on-month — the divergence between GC and ES trends is the most compelling visual story in the data</span></div>
         </div>
         <div class="wi-cell">
           <div class="wi-title amber">→ &nbsp;How to improve</div>
-          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Dec 2025 GC duration (1,138 min) was worse than ES (686 min) — investigate root cause to prevent regression on new route onboarding</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Dec 2025 GC duration (1,138 min) was higher than ES (686 min) — investigate root cause to prevent regression as new routes are onboarded</span></div>
           <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Filter duration by product type — Guaranteed and Next Day should be materially shorter than Basic Uplift</span></div>
           <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Measure dwell time at transit stations for the 29.3% transit bookings — biggest headroom for improvement</span></div>
         </div>
@@ -675,7 +675,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
       <div class="wi-row">
         <div class="wi-cell">
           <div class="wi-title green">✓ &nbsp;What went well</div>
-          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>8.8× growth in block bookings (243 → 2,144) — entirely organic, driven by GC surfacing block inventory that was previously invisible to agents</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>8.8× growth in block bookings (243 → 2,144) — entirely organic, driven by GC surfacing block inventory directly within the agent booking flow</span></div>
           <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Hard block and soft block growing at equal rates — agents are committing to hard block with confidence, not defaulting to the softer option</span></div>
           <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Acceleration in Apr–May 2026 aligned with GC crossing 50% agent share — more agents on GC = more block exposure = more guaranteed revenue</span></div>
           <div class="wi-item"><span class="wi-bullet bullet-green"></span><span>Block bookings provide load planning teams with committed forward capacity — reducing last-minute flight plan changes and improving ULD utilisation</span></div>
@@ -685,7 +685,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
           <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Block coverage by O&amp;D is unknown — identify which high-volume routes have no block product sold, and prioritise the sales team to close those gaps</span></div>
           <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Soft block → hard block conversion rate should be tracked — agents on soft block are warm leads for the sales team to upgrade to committed hard block revenue</span></div>
           <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>Agent training on block commitment — agents who understand hard block's commercial model (pay whether you load or not) make faster, more confident purchasing decisions</span></div>
-          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>As migration completes, the full ES agent base will have block visibility for the first time — the sales team should have a proactive outreach plan ready for this cohort</span></div>
+          <div class="wi-item"><span class="wi-bullet bullet-amber"></span><span>As migration completes, the growing GC agent base will have increasing access to block inventory — the sales team should have a proactive outreach plan ready to convert this demand</span></div>
         </div>
       </div>
     </div>
@@ -739,7 +739,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
         </div>
         <div class="lever">
           <div class="lever-header"><span class="lever-id">L-03</span><span class="lever-title">Booking queue SLA management</span></div>
-          <div class="lever-body">Colour-coded SLA timers ensure waitlisted bookings are reviewed before they expire — preventing demand leakage from slow queue clearance.</div>
+          <div class="lever-body">Colour-coded SLA timers ensure waitlisted bookings are reviewed and actioned within defined windows — reducing the risk of bookings timing out before a decision is made.</div>
           <span class="lever-impact impact-blue">↓ Leakage</span>
         </div>
       </div>
@@ -768,7 +768,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
         <div>
           <div class="metric-tag tag-blue">Revenue ceiling</div>
           <div class="metric-name">Unique agents — GC vs ES</div>
-          <div class="metric-stream">Agent count defines the ceiling of GC booking volume. An agent not on GC is commercial activity invisible to the GC ecosystem.</div>
+          <div class="metric-stream">Agent count defines the ceiling of GC booking volume. Growing the GC agent base directly expands Teleport's addressable commercial activity on the modern platform.</div>
         </div>
         <div class="metric-current">
           <div class="metric-current-val green" id="ab-gc">–</div>
@@ -777,7 +777,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
       </div>
       <div class="outcome-row">
         <div class="outcome-label">Outcome</div>
-        <div class="outcome-text">GC's agent base exceeds ES, and agents on GC make better routing decisions — demonstrated by higher direct rate and lower avg legs per AWB.</div>
+        <div class="outcome-text">GC's agent base has grown to exceed the number of agents on ES, and GC agents show a higher direct booking rate and lower average legs per AWB — indicators of efficient routing behaviour on the platform.</div>
       </div>
       <div class="chart-area">
         <div class="chart-legend">
