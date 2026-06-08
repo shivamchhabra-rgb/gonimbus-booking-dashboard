@@ -237,132 +237,96 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
     <!-- BUSINESS IMPACT RIBBON -->
     <div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:0">
 
-      <!-- Row 1: Business metric group headers -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;background:var(--surface)">
-
-        <!-- Faster Delivery spans 2 cols -->
-        <div style="grid-column:span 2;background:var(--gc-bg);border-bottom:2px solid var(--gc-line);padding:9px 20px;display:flex;align-items:center;gap:8px">
-          <span style="display:inline-block;width:18px;height:18px;background:var(--gc-line);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">⚡</span>
-          <div>
-            <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gc);line-height:1">Faster Delivery</div>
-            <div style="font-size:10px;color:var(--gc);opacity:.7;margin-top:2px">Operational efficiency metric</div>
-          </div>
-        </div>
-
-        <!-- Revenue Upscaling — 1 col -->
-        <div style="background:var(--blue-bg);border-bottom:2px solid var(--blue);padding:9px 20px;display:flex;align-items:center;gap:8px;border-left:1px solid var(--border)">
-          <span style="display:inline-block;width:18px;height:18px;background:var(--blue);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">💰</span>
-          <div>
-            <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);line-height:1">Revenue Upscaling</div>
-            <div style="font-size:10px;color:var(--blue);opacity:.7;margin-top:2px">Commercial mix metric</div>
-          </div>
-        </div>
-
-        <!-- User Friendly — 1 col -->
-        <div style="background:#fdf4ff;border-bottom:2px solid #7c3aed;padding:9px 20px;display:flex;align-items:center;gap:8px;border-left:1px solid var(--border)">
-          <span style="display:inline-block;width:18px;height:18px;background:#7c3aed;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">😊</span>
-          <div>
-            <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#7c3aed;line-height:1">User Friendly</div>
-            <div style="font-size:10px;color:#7c3aed;opacity:.7;margin-top:2px">Adoption & engagement metric</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Row 2: Metric cards -->
+      <!-- 4 metric cards in one clean row -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1px;background:var(--border)">
 
         <!-- Flying hours saved -->
-        <div style="background:var(--white);padding:18px 20px">
-          <div style="font-size:10px;font-weight:500;color:var(--gc);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:flex;align-items:center;gap:5px">
-            <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gc-line)"></span>Flying hours saved
+        <div style="background:var(--white);padding:20px 22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">Flying hours saved</span>
+            <span style="font-size:9px;font-weight:500;padding:2px 7px;border-radius:10px;background:var(--gc-bg);color:var(--gc);border:1px solid var(--gc-border)">Faster Delivery</span>
           </div>
-          <div style="font-family:'DM Mono',monospace;font-size:30px;font-weight:500;color:var(--gc);line-height:1;margin-bottom:6px" id="r-hrs-saved">–</div>
-          <div style="font-size:11px;color:var(--ink-3);line-height:1.5">Hours saved across all GC bookings vs average route duration</div>
-          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:10px;color:var(--ink-4)">Time saved / booking</span>
-            <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--gc)" id="r-min-saved">–</span>
+          <div style="font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:var(--gc);line-height:1;margin-bottom:4px" id="r-hrs-saved">–</div>
+          <div style="font-size:11px;color:var(--ink-3);margin-bottom:14px">across all GC bookings</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border)">
+            <span style="font-size:10px;color:var(--ink-4)">Saved per booking</span>
+            <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--gc)" id="r-min-saved">–</span>
           </div>
         </div>
 
         <!-- Direct flights -->
-        <div style="background:var(--white);padding:18px 20px">
-          <div style="font-size:10px;font-weight:500;color:var(--gc);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:flex;align-items:center;gap:5px">
-            <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gc-line)"></span>Direct flight bookings
+        <div style="background:var(--white);padding:20px 22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">Direct flight bookings</span>
+            <span style="font-size:9px;font-weight:500;padding:2px 7px;border-radius:10px;background:var(--gc-bg);color:var(--gc);border:1px solid var(--gc-border)">Faster Delivery</span>
           </div>
-          <div style="font-family:'DM Mono',monospace;font-size:30px;font-weight:500;color:var(--gc);line-height:1;margin-bottom:6px" id="r-direct-count">–</div>
-          <div style="font-size:11px;color:var(--ink-3);line-height:1.5">1-leg direct bookings on GC — fewer handoffs, faster delivery</div>
-          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <div style="font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:var(--gc);line-height:1;margin-bottom:4px" id="r-direct-count">–</div>
+          <div style="font-size:11px;color:var(--ink-3);margin-bottom:14px">1-leg routes on GC</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border)">
             <span style="font-size:10px;color:var(--ink-4)">GC direct rate</span>
-            <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--gc)" id="r-direct-rate">–</span>
+            <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--gc)" id="r-direct-rate">–</span>
           </div>
         </div>
 
         <!-- Premium product split -->
-        <div style="background:var(--white);padding:18px 20px">
-          <div style="font-size:10px;font-weight:500;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:flex;align-items:center;gap:5px">
-            <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--blue)"></span>Premium product type split
+        <div style="background:var(--white);padding:20px 22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">Premium product mix</span>
+            <span style="font-size:9px;font-weight:500;padding:2px 7px;border-radius:10px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)">Revenue</span>
           </div>
-          <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:6px">
-            <div>
-              <div style="font-family:'DM Mono',monospace;font-size:30px;font-weight:500;color:var(--blue);line-height:1" id="r-gc-prem">–</div>
-              <div style="font-size:10px;color:var(--ink-4);margin-top:3px">GC mix</div>
-            </div>
-            <div style="font-size:13px;color:var(--border);padding-bottom:4px">|</div>
-            <div>
-              <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:400;color:var(--ink-3);line-height:1" id="r-es-prem">–</div>
-              <div style="font-size:10px;color:var(--ink-4);margin-top:3px">ES mix</div>
-            </div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+            <div style="font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:var(--blue);line-height:1" id="r-gc-prem">–</div>
+            <div style="font-size:11px;color:var(--ink-4)">GC &nbsp;·&nbsp; <span id="r-es-prem" style="color:var(--ink-3)">–</span> ES</div>
           </div>
-          <div style="font-size:11px;color:var(--ink-3);line-height:1.5">TG Contract, Guaranteed &amp; LTF as % of total bookings</div>
-          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:10px;color:var(--ink-4)">GC premium advantage</span>
-            <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--blue)" id="r-prem-delta">–</span>
+          <div style="font-size:11px;color:var(--ink-3);margin-bottom:14px">TG Contract, Guaranteed &amp; LTF</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border)">
+            <span style="font-size:10px;color:var(--ink-4)">GC advantage</span>
+            <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--blue)" id="r-prem-delta">–</span>
           </div>
         </div>
 
-        <!-- Active agents GC vs ES -->
-        <div style="background:var(--white);padding:18px 20px">
-          <div style="font-size:10px;font-weight:500;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:flex;align-items:center;gap:5px">
-            <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#7c3aed"></span>Active agents
+        <!-- Active agents -->
+        <div style="background:var(--white);padding:20px 22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">Active agents</span>
+            <span style="font-size:9px;font-weight:500;padding:2px 7px;border-radius:10px;background:#fdf4ff;color:#7c3aed;border:1px solid #e9d5ff">User Friendly</span>
           </div>
-          <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:6px">
-            <div>
-              <div style="font-family:'DM Mono',monospace;font-size:30px;font-weight:500;color:#7c3aed;line-height:1" id="r-gc-agents">–</div>
-              <div style="font-size:10px;color:var(--ink-4);margin-top:3px">on GC</div>
-            </div>
-            <div style="font-size:13px;color:var(--border);padding-bottom:4px">|</div>
-            <div>
-              <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:400;color:var(--ink-3);line-height:1" id="r-es-agents">–</div>
-              <div style="font-size:10px;color:var(--ink-4);margin-top:3px">on ES</div>
-            </div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+            <div style="font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:#7c3aed;line-height:1" id="r-gc-agents">–</div>
+            <div style="font-size:11px;color:var(--ink-4)">GC &nbsp;·&nbsp; <span id="r-es-agents" style="color:var(--ink-3)">–</span> ES</div>
           </div>
-          <div style="font-size:11px;color:var(--ink-3);line-height:1.5">Unique agents with bookings on each platform</div>
-          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:10px;color:var(--ink-4)">GC agent lead</span>
-            <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:#7c3aed" id="r-agent-delta">–</span>
+          <div style="font-size:11px;color:var(--ink-3);margin-bottom:14px">Unique agents with bookings</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border)">
+            <span style="font-size:10px;color:var(--ink-4)">GC lead</span>
+            <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:#7c3aed" id="r-agent-delta">–</span>
           </div>
         </div>
       </div>
 
-      <!-- Row 3: GC progression bar -->
-      <div style="background:var(--white);border-top:1px solid var(--border);padding:14px 20px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
-          <div style="display:flex;align-items:center;gap:8px">
+      <!-- GC migration progress bar -->
+      <div style="background:var(--surface);border-top:1px solid var(--border);padding:14px 22px 16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px">
             <span style="font-size:11px;font-weight:600;color:var(--ink-2)">GC migration progress</span>
             <span style="font-size:10px;color:var(--ink-4)" id="r-prog-range">Dec 2025 – Jun 2026</span>
           </div>
-          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-            <span style="font-size:11px;color:var(--ink-3)">GC bookings: <span style="font-family:'DM Mono',monospace;font-weight:500;color:var(--gc)" id="r-gc-total">–</span></span>
-            <span style="font-size:11px;color:var(--ink-3)">GC share: <span style="font-family:'DM Mono',monospace;font-weight:500;color:var(--gc)" id="r-gc-share">–</span></span>
-            <span style="font-size:11px;color:var(--ink-3)">Next target: <span style="font-family:'DM Mono',monospace;font-weight:500;color:#7c3aed">80%</span></span>
+          <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+            <span style="font-size:11px;color:var(--ink-3)">Total bookings: <span style="font-family:'DM Mono',monospace;font-weight:500;color:var(--ink-2)" id="r-gc-total">–</span></span>
+            <span style="font-size:11px;color:var(--ink-3)">GC share: <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--gc)" id="r-gc-share">–</span></span>
+            <span style="font-size:11px;color:var(--ink-3)">Target: <span style="font-family:'DM Mono',monospace;font-weight:600;color:#7c3aed">80%</span></span>
           </div>
         </div>
-        <div style="position:relative;height:8px;background:var(--surface);border-radius:4px;overflow:hidden;border:1px solid var(--border)">
-          <div id="r-prog-bar" style="position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#0a6640,var(--gc-line));border-radius:4px;transition:width .6s ease;width:0%"></div>
-          <div style="position:absolute;left:80%;top:-3px;width:1px;height:14px;background:#7c3aed;opacity:.5"></div>
+        <!-- Progress bar -->
+        <div style="position:relative;height:10px;background:var(--white);border-radius:6px;border:1px solid var(--border);overflow:hidden">
+          <div id="r-prog-bar" style="position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#0a6640,#1D9E75);border-radius:6px;transition:width .8s ease;width:0%"></div>
+          <!-- 80% target line — inside bar container -->
+          <div style="position:absolute;left:80%;top:0;width:2px;height:100%;background:#7c3aed;opacity:.6;z-index:1"></div>
         </div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--ink-4)">
-          <span>0%</span><span style="color:#7c3aed;margin-left:calc(80% - 30px)">80% target</span><span>100%</span>
+        <!-- Labels below bar — positioned correctly -->
+        <div style="position:relative;height:16px;margin-top:4px">
+          <span style="position:absolute;left:0;font-size:10px;color:var(--ink-4)">0%</span>
+          <span style="position:absolute;left:80%;transform:translateX(-50%);font-size:10px;color:#7c3aed;font-weight:500;white-space:nowrap">80% target</span>
+          <span style="position:absolute;right:0;font-size:10px;color:var(--ink-4)">100%</span>
         </div>
       </div>
 
